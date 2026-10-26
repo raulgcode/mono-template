@@ -1,0 +1,19 @@
+{
+  "name": "@starter/core",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@starter/contracts": "workspace:*",
+    "@starter/db": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@starter/tsconfig": "workspace:*"
+  }
+}

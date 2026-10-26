@@ -1,0 +1,49 @@
+{
+  "name": "@starter/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "NODE_ENV=development react-router typegen && tsc",
+    "lighthouse": "lhci autorun && pnpm lighthouse:dark && pnpm lighthouse:en",
+    "lighthouse:dark": "lhci autorun --collect.settings.extraHeaders='{\"Cookie\":\"theme=ImRhcmsi\"}'",
+    "lighthouse:en": "lhci autorun --collect.settings.extraHeaders='{\"Accept-Language\":\"en\"}'"
+  },
+  "dependencies": {
+    "@conform-to/react": "catalog:",
+    "@conform-to/zod": "catalog:",
+    "@react-router/node": "catalog:",
+    "@react-router/serve": "catalog:",
+    "@starter/auth": "workspace:*",
+    "@starter/contracts": "workspace:*",
+    "@starter/core": "workspace:*",
+    "@starter/db": "workspace:*",
+    "@starter/email": "workspace:*",
+    "@starter/env": "workspace:*",
+    "@starter/i18n": "workspace:*",
+    "class-variance-authority": "catalog:",
+    "clsx": "catalog:",
+    "isbot": "catalog:",
+    "lucide-react": "catalog:",
+    "radix-ui": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router": "catalog:",
+    "tailwind-merge": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@lhci/cli": "catalog:",
+    "@react-router/dev": "catalog:",
+    "@starter/tsconfig": "workspace:*",
+    "@tailwindcss/vite": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "tailwindcss": "catalog:",
+    "tw-animate-css": "catalog:",
+    "vite": "catalog:"
+  }
+}

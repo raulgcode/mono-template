@@ -1,0 +1,26 @@
+{
+  "name": "@starter/auth",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "auth:generate": "auth generate --config src/cli-config.ts --output ../db/src/schema/auth.ts --yes"
+  },
+  "dependencies": {
+    "@starter/db": "workspace:*",
+    "@starter/email": "workspace:*",
+    "@starter/env": "workspace:*",
+    "@starter/i18n": "workspace:*",
+    "better-auth": "catalog:",
+    "react": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@starter/tsconfig": "workspace:*",
+    "@types/react": "catalog:",
+    "auth": "catalog:"
+  }
+}

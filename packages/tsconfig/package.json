@@ -1,0 +1,8 @@
+{
+  "name": "@starter/tsconfig",
+  "private": true,
+  "files": [
+    "base.json",
+    "react.json"
+  ]
+}

@@ -1,0 +1,59 @@
+import type { MessageKey } from "@starter/i18n";
+import type { Messages } from "@starter/i18n/messages";
+import { createRoutesStub, Link } from "react-router";
+import { describe, expect, it } from "vitest";
+import { render } from "vitest-browser-react";
+import { translatedRoot } from "~/test/i18n";
+import { richText, useLocale, useT } from "./i18n";
+
+// A tagged text the dictionaries don't have yet, sent the way a loader would.
+const tagged = { demo: { terms: "Lee los <terms>términos</terms> de {business}" } };
+const taggedKey = "demo.terms" as MessageKey<Messages>;
+
+function Page() {
+  const t = useT();
+  return (
+    <main lang={useLocale()}>
+      <h1>{t("common.notFoundTitle")}</h1>
+      <p>{t("common.themeCurrent", { theme: t("common.themeDark") })}</p>
+      <p>
+        {richText(t, taggedKey, { terms: (text) => <Link to="/terms">{text}</Link> }, {
+          business: "Café Luna",
+        } as never)}
+      </p>
+    </main>
+  );
+}
+
+function renderPage(locale: "es" | "en") {
+  const root = translatedRoot(locale);
+  const Stub = createRoutesStub([
+    {
+      id: "root",
+      path: "/",
+      loader: () => ({ ...root, i18n: { ...root.i18n, ...tagged } }),
+      HydrateFallback: () => null,
+      Component: Page,
+    },
+  ]);
+  return render(<Stub />);
+}
+
+describe("useT", () => {
+  it("traduce con lo que mandó el loader, en su idioma", async () => {
+    const screen = await renderPage("en");
+    await expect
+      .element(screen.getByRole("heading"))
+      .toHaveTextContent("We couldn't find this page");
+    await expect.element(screen.getByText("Theme: Dark")).toBeVisible();
+    await expect.element(screen.getByRole("main")).toHaveAttribute("lang", "en");
+  });
+
+  it("richText cambia las etiquetas por componentes y rellena los placeholders", async () => {
+    const screen = await renderPage("es");
+    await expect
+      .element(screen.getByRole("link", { name: "términos" }))
+      .toHaveAttribute("href", "/terms");
+    await expect.element(screen.getByText(/Lee los .* de Café Luna/)).toBeVisible();
+  });
+});
