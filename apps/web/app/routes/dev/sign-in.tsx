@@ -8,10 +8,10 @@ import { requireDevTools } from "~/lib/dev-tools.server";
 import { auth, db } from "~/lib/services.server";
 import type { Route } from "./+types/sign-in";
 
-// A local tool in Spanish only: it never reaches a production build (see dev-tools.server.ts).
+// A local tool in English only: it never reaches a production build (see dev-tools.server.ts).
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Entrar como… · Dev" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Sign in as… · Dev" }, { name: "robots", content: "noindex" }];
 }
 
 const like = (q: string) => `%${q.replace(/[\\%_]/g, "\\$&")}%`;
@@ -66,30 +66,30 @@ export default function DevSignIn({ loaderData }: Route.ComponentProps) {
   return (
     <main className="mx-auto grid max-w-3xl gap-6 px-4 py-8">
       <header className="grid gap-1">
-        <p className="text-sm font-medium text-muted-foreground">Herramienta local · pnpm dev</p>
-        <h1 className="text-2xl font-semibold">Entrar como…</h1>
+        <p className="text-sm font-medium text-muted-foreground">Local tool · pnpm dev</p>
+        <h1 className="text-2xl font-semibold">Sign in as…</h1>
         <p className="text-sm text-muted-foreground">
-          {current ? `Ahora estás como ${current}.` : "No has entrado."}
+          {current ? `You are signed in as ${current}.` : "You are not signed in."}
         </p>
       </header>
       <Form method="get" className="flex items-end gap-2">
         <div className="grid flex-1 gap-2">
-          <Label htmlFor="q">Buscar por nombre o correo</Label>
+          <Label htmlFor="q">Search by name or email</Label>
           <Input id="q" name="q" type="search" defaultValue={q} />
         </div>
         <Button type="submit" variant="outline">
-          Buscar
+          Search
         </Button>
       </Form>
       <Card>
         <CardHeader>
           <CardTitle>
-            <h2>Usuarios</h2>
+            <h2>Users</h2>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nadie con ese nombre o correo.</p>
+            <p className="text-sm text-muted-foreground">Nobody with that name or email.</p>
           ) : (
             <ul className="divide-y">
               {users.map((user) => (
@@ -105,8 +105,8 @@ export default function DevSignIn({ loaderData }: Route.ComponentProps) {
                   </div>
                   <Form method="post">
                     <input type="hidden" name="userId" value={user.id} />
-                    <Button type="submit" aria-label={`Entrar como ${user.email}`}>
-                      Entrar
+                    <Button type="submit" aria-label={`Sign in as ${user.email}`}>
+                      Sign in
                     </Button>
                   </Form>
                 </li>

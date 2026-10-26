@@ -5,7 +5,7 @@ import type { Theme } from "~/lib/theme";
 import { translatedRoot } from "~/test/i18n";
 import { ThemeToggle } from "./theme-toggle";
 
-function renderToggle(theme: Theme, locale: "es" | "en" = "es") {
+function renderToggle(theme: Theme, locale: "es" | "en" = "en") {
   let saved: FormData | undefined;
   const Stub = createRoutesStub([
     {
@@ -30,21 +30,21 @@ function renderToggle(theme: Theme, locale: "es" | "en" = "es") {
 
 describe("ThemeToggle", () => {
   it.each([
-    ["system", "Tema: Sistema. Cambiar a claro"],
-    ["light", "Tema: Claro. Cambiar a oscuro"],
-    ["dark", "Tema: Oscuro. Cambiar a sistema"],
-  ] as const)("con tema %s dice a cuál cambia", async (theme, name) => {
+    ["system", "Theme: System. Switch to light"],
+    ["light", "Theme: Light. Switch to dark"],
+    ["dark", "Theme: Dark. Switch to system"],
+  ] as const)("with the %s theme it says which one comes next", async (theme, name) => {
     const { screen } = renderToggle(theme);
     await expect.element((await screen).getByRole("button", { name })).toBeVisible();
   });
 
-  it("se lee en inglés cuando la página está en inglés", async () => {
-    const { screen } = renderToggle("dark", "en");
-    const name = "Theme: Dark. Switch to system";
+  it("reads in Spanish when the page is in Spanish", async () => {
+    const { screen } = renderToggle("dark", "es");
+    const name = "Tema: Oscuro. Cambiar a sistema";
     await expect.element((await screen).getByRole("button", { name })).toBeVisible();
   });
 
-  it("envía el siguiente tema y la página actual", async () => {
+  it("sends the next theme and the current page", async () => {
     const { screen, saved } = renderToggle("light");
     await (await screen).getByRole("button").click();
 

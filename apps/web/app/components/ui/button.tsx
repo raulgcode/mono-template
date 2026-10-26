@@ -16,7 +16,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        // 44 px: everything a thumb taps (AGENTS.md, "Primero el celular").
+        // 44 px: everything a thumb taps (AGENTS.md, "Mobile first").
         default: "h-11 px-4 py-2",
         lg: "h-12 rounded-md px-6 text-base",
         icon: "size-11",

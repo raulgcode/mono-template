@@ -15,15 +15,15 @@ export interface PluralMessage {
 
 export type Message = string | PluralMessage;
 
-/** One screen or area of the app: `{ empty: "Todavía no hay clientes", … }`. */
+/** One screen or area of the app: `{ empty: "No customers yet", … }`. */
 export type Namespace = { readonly [key: string]: Message };
 
 /** Every namespace of a language: `{ common: {…}, customers: {…} }`. */
 export type Dictionary = { readonly [namespace: string]: Namespace };
 
 /**
- * The shape another language must have: the same namespaces and keys as the Spanish source,
- * with any text. `en satisfies Translation<typeof es>` breaks typecheck when a key is missing.
+ * The shape another language must have: the same namespaces and keys as the English source,
+ * with any text. `es satisfies Translation<typeof en>` breaks typecheck when a key is missing.
  */
 export type Translation<D extends Dictionary> = {
   readonly [N in keyof D]: {
@@ -32,8 +32,8 @@ export type Translation<D extends Dictionary> = {
 };
 
 /**
- * A regional variant: some texts of some namespaces, in the source's shape. `es-CR` only holds
- * what changes from `es`; `withOverrides` fills in the rest.
+ * A regional variant: some texts of some namespaces, in the source's shape. `en-GB` would only hold
+ * what changes from `en`; `withOverrides` fills in the rest.
  */
 export type Overrides<D extends Dictionary> = {
   readonly [N in keyof D]?: Partial<Translation<D>[N]>;
@@ -61,7 +61,7 @@ type MessageAt<D extends Dictionary, K extends string> = K extends `${infer N}.$
   ? D[N][Key]
   : never;
 
-/** `"Hola {name}, tienes {count}"` → `"name" | "count"`. Tags like `<link>` are not placeholders. */
+/** `"Hi {name}, you have {count}"` → `"name" | "count"`. Tags like `<link>` are not placeholders. */
 export type Placeholders<S extends string> = S extends `${string}{${infer Name}}${infer Rest}`
   ? Name | Placeholders<Rest>
   : never;
@@ -157,7 +157,7 @@ export type RichPart<T> = string | { tag: string; node: T };
 
 /**
  * Splits a translated text on its tags so each one becomes a component:
- * `"Lee los <terms>términos</terms>"` + `{ terms: (text) => <Link>{text}</Link> }`.
+ * `"Read the <terms>terms</terms>"` + `{ terms: (text) => <Link>{text}</Link> }`.
  * Tags don't nest; one without a renderer stays as plain text.
  */
 export function splitRich<T>(

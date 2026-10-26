@@ -1,3 +1,6 @@
+import type { Translation } from "../../translate";
+import type { en } from "../en";
+
 /**
  * Shared by the forms, including the validation errors: the schemas in `@starter/contracts`
  * return these keys and `FieldErrors` translates them.
@@ -18,4 +21,4 @@ export const forms = {
   workspaceNameTooShort: "El nombre debe tener al menos 2 caracteres",
   workspaceNameTooLong: "El nombre puede tener hasta 80 caracteres",
   tooManyAttempts: "Demasiados intentos. Espera unos minutos y vuelve a probar.",
-} as const;
+} as const satisfies Translation<typeof en>["forms"];

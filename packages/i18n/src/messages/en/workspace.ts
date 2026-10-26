@@ -1,6 +1,3 @@
-import type { Translation } from "../../translate";
-import type { es } from "../es";
-
 export const workspace = {
   onboardingTitle: "Create your workspace",
   onboardingHeading: "Create your workspace",
@@ -15,4 +12,4 @@ export const workspace = {
   homeTitle: "Home",
   homeHeading: "Hi, {name}",
   homeIntro: "This is the home of {workspace}. Your project's first screen goes here.",
-} as const satisfies Translation<typeof es>["workspace"];
+} as const;

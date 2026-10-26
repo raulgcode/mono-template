@@ -33,7 +33,7 @@ interface ActionArgs {
 }
 
 /**
- * The action of /login: "Continuar con Google", a magic link or the password, by `intent`. Each
+ * The action of /login: "Continue with Google", a magic link or the password, by `intent`. Each
  * one lands on `?redirectTo` (or /app).
  */
 export async function signInAction({ request, url, context }: ActionArgs) {

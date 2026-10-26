@@ -1,267 +1,268 @@
-# Starter · guía para agentes y personas
+# Starter · guide for agents and people
 
-Starter sale de la plantilla `mono-template`: un monorepo con lo de siempre ya resuelto (entrar
-con Google, contraseña o enlace por correo, espacios de trabajo multi-tenant, idiomas, tema claro
-y oscuro, correos, seguridad, pruebas y despliegue). Lo propio del proyecto se escribe encima,
-siguiendo estas reglas. Si una regla no aplica, se cambia aquí primero y luego el código.
+Starter comes from the `mono-template` template: a monorepo with the usual things already solved
+(sign-in with Google, password or an email link, multi-tenant workspaces, languages, light and
+dark theme, emails, security, tests and deployment). The project's own work is written on top,
+following these rules. If a rule doesn't apply, change it here first and then the code.
 
-## Mapa del monorepo
+## Monorepo map
 
-| Ruta                 | Qué es                                                                  |
-| -------------------- | ----------------------------------------------------------------------- |
-| `apps/web`           | React Router 8 (framework mode): páginas, login, el espacio de trabajo  |
-| `apps/api`           | Fastify + Zod: API pública, webhooks y tareas programadas               |
-| `apps/e2e`           | Playwright: escenarios BDD en celular y escritorio, accesibilidad (axe) |
-| `packages/core`      | Casos de uso multi-tenant. Toda la lógica de negocio vive aquí          |
-| `packages/contracts` | Esquemas `zod/mini` compartidos por formularios, actions, API y core    |
-| `packages/db`        | Drizzle: esquema, migraciones, cliente, utilidades de prueba            |
-| `packages/auth`      | Better Auth: enlace por correo, contraseña, Google y organizaciones     |
-| `packages/email`     | Nodemailer + MJML: correos con la marca, en claro y oscuro              |
-| `packages/i18n`      | Idiomas (es, en): diccionarios tipados, `t()`, elección de idioma       |
-| `packages/env`       | Validación de variables de entorno con Zod                              |
-| `tooling/*`          | Scripts del repo: setup, release, secretos de Fly, e2e remoto           |
+| Path                 | What it is                                                          |
+| -------------------- | ------------------------------------------------------------------- |
+| `apps/web`           | React Router 8 (framework mode): pages, sign-in, the workspace      |
+| `apps/api`           | Fastify + Zod: public API, webhooks and scheduled jobs              |
+| `apps/e2e`           | Playwright: BDD scenarios on phone and desktop, accessibility (axe) |
+| `packages/core`      | Multi-tenant use cases. All business logic lives here               |
+| `packages/contracts` | `zod/mini` schemas shared by forms, actions, API and core           |
+| `packages/db`        | Drizzle: schema, migrations, client, test utilities                 |
+| `packages/auth`      | Better Auth: email link, password, Google and organizations         |
+| `packages/email`     | Nodemailer + MJML: branded emails, in light and dark                |
+| `packages/i18n`      | Languages (en, es): typed dictionaries, `t()`, language choice      |
+| `packages/env`       | Environment variable validation with Zod                            |
+| `tooling/*`          | Repo scripts: setup, release, Fly secrets, remote e2e               |
 
-## Reglas
+## Rules
 
-### Herramientas: siempre su CLI
+### Tools: always their CLI
 
-**Si una herramienta tiene CLI, se usa su CLI.** Nada de crear a mano lo que el CLI genera, ni de
-copiar una salida de memoria: el CLI sabe la versión exacta del repo.
-- Rutas y archivos de React Router: `npx react-router reveal entry.server|entry.client`,
-  `react-router typegen` (corre solo en `pnpm typecheck`). Proyectos nuevos: `create-react-router`.
-- Base de datos: `pnpm db:generate` (drizzle-kit) para cada migración, `pnpm db:migrate`,
-  `pnpm db:studio`. Nunca escribas una migración ni un `meta/` a mano.
-- Tablas de Better Auth: `pnpm auth:generate` (CLI de Better Auth), nunca a mano.
-- Componentes de UI: `pnpm dlx shadcn@latest add <componente>` desde `apps/web`
-  (`components.json`), luego se ajustan a los tokens de la marca.
-- Dependencias: `pnpm add <pkg> --filter <paquete>` (sin `@catalog:`, que corrompe el catálogo) y
-  luego mueve la versión al `catalog` de `pnpm-workspace.yaml`; el `package.json` queda con
-  `"catalog:"`. `pnpm-lock.yaml` lo escribe solo pnpm.
-- Formato y lint: `pnpm format` y `pnpm lint` (Biome), nunca a mano.
-- Playwright: `npx playwright cli …` (skill `playwright-cli`), `npx playwright init-agents`.
-- Skills: `npx skills add <repo> --skill <nombre>`.
+**If a tool has a CLI, use its CLI.** Never hand-write what the CLI generates, nor copy an output
+from memory: the CLI knows the repo's exact version.
+- React Router routes and files: `npx react-router reveal entry.server|entry.client`,
+  `react-router typegen` (runs on its own in `pnpm typecheck`). New projects: `create-react-router`.
+- Database: `pnpm db:generate` (drizzle-kit) for each migration, `pnpm db:migrate`,
+  `pnpm db:studio`. Never write a migration or a `meta/` by hand.
+- Better Auth tables: `pnpm auth:generate` (Better Auth's CLI), never by hand.
+- UI components: `pnpm dlx shadcn@latest add <component>` from `apps/web`
+  (`components.json`), then adjusted to the brand tokens.
+- Dependencies: `pnpm add <pkg> --filter <package>` (without `@catalog:`, which corrupts the
+  catalog), then move the version to the `catalog` in `pnpm-workspace.yaml`; the `package.json`
+  keeps `"catalog:"`. Only pnpm writes `pnpm-lock.yaml`.
+- Format and lint: `pnpm format` and `pnpm lint` (Biome), never by hand.
+- Playwright: `npx playwright cli …` (`playwright-cli` skill), `npx playwright init-agents`.
+- Skills: `npx skills add <repo> --skill <name>`.
 
-### React Router 8: la skill oficial manda
+### React Router 8: the official skill rules
 
-**Antes de escribir o revisar cualquier ruta, lee la skill `.agents/skills/react-router`**
-(también en `.claude/skills`) y la documentación instalada en
-`apps/web/node_modules/react-router/docs`, que es la de la versión exacta del repo. Si la skill
-no está, instálala antes de seguir: `npx skills add https://github.com/remix-run/react-router
---skill react-router`; si faltan los docs, corre `pnpm install`. No agregues antipatrones que la
-skill descarta.
-- **Nunca uses `useEffect` para traer datos del servidor.** Lecturas con `loader`, escrituras con
-  `action` (o `useFetcher`); la revalidación la hace React Router. `useEffect` queda solo para
-  efectos del navegador, como mover el foco.
-- Auth y tenant con `middleware` + `context` (`app/middleware/auth.server.ts`, `app/context.ts`).
-- Tipos de `./+types/<ruta>`; URLs con `href()` tipado, nunca strings sueltos.
-- `<Form>` cuando la mutación navega; `useFetcher` cuando la persona se queda en la página.
-- Código de servidor en módulos `*.server.ts`; una ruta nueva se registra en `app/routes.ts`.
+**Before writing or reviewing any route, read the `.agents/skills/react-router` skill** (also in
+`.claude/skills`) and the docs installed in `apps/web/node_modules/react-router/docs`, which are
+the ones for the repo's exact version. If the skill is missing, install it before going on:
+`npx skills add https://github.com/remix-run/react-router --skill react-router`; if the docs are
+missing, run `pnpm install`. Don't add antipatterns the skill rules out.
+- **Never use `useEffect` to fetch server data.** Reads with a `loader`, writes with an `action`
+  (or `useFetcher`); React Router does the revalidation. `useEffect` is only for browser effects,
+  such as moving focus.
+- Auth and tenant with `middleware` + `context` (`app/middleware/auth.server.ts`, `app/context.ts`).
+- Types from `./+types/<route>`; URLs with typed `href()`, never loose strings.
+- `<Form>` when the mutation navigates; `useFetcher` when the person stays on the page.
+- Server code in `*.server.ts` modules; a new route is registered in `app/routes.ts`.
 
-### Formularios: Conform + Zod, siempre
+### Forms: Conform + Zod, always
 
-Todo formulario usa **Conform** (`@conform-to/react`, `@conform-to/zod/v4`) con un esquema de
-`@starter/contracts`. El mismo esquema valida en el navegador (`onValidate` con `parseWithZod`) y
-en la `action` (`parseWithZod`); los errores vuelven con `data({ result: submission.reply() },
-{ status: 400 })`. Los inputs van con `TextField` (conecta label, descripción y errores con
-`aria-*`). Los errores del esquema son claves de i18n (`message("forms.emailInvalid")`) que
-`FieldErrors` traduce; la ruta carga `forms`. Nada de `useState` por campo ni validación a mano.
-Ejemplos: `routes/sign-up.tsx`, `routes/app/onboarding.tsx`.
+Every form uses **Conform** (`@conform-to/react`, `@conform-to/zod/v4`) with a schema from
+`@starter/contracts`. The same schema validates in the browser (`onValidate` with
+`parseWithZod`) and in the `action` (`parseWithZod`); errors come back with
+`data({ result: submission.reply() }, { status: 400 })`. Inputs use `TextField` (it wires label,
+description and errors with `aria-*`). Schema errors are i18n keys
+(`message("forms.emailInvalid")`) that `FieldErrors` translates; the route loads `forms`. No
+`useState` per field and no hand-written validation. Examples: `routes/sign-up.tsx`,
+`routes/app/onboarding.tsx`.
 
-### Intuitiva y mobile first
+### Intuitive and mobile first
 
-Quien usa la app la usa desde el celular. Toda pantalla se diseña primero para el celular; el
-escritorio es la versión ampliada, nunca al revés.
-1. **Primero el celular.** Cada pantalla funciona desde 360 px de ancho, y cada escenario BDD
-   corre en el proyecto `mobile` de Playwright, no solo en `desktop`.
-2. **Una tarea, una pantalla, una acción principal.** El botón principal queda al alcance del
-   pulgar y todo lo que se toca mide al menos 44 × 44 px. En el espacio, las secciones son la barra
-   de abajo en el celular y el menú lateral desde 768 px (`AppShell`, una sección nueva es un item
-   más).
-3. **Nada depende de hover, teclado físico ni tablas anchas.** Lo que se desplaza de lado va en
-   `<ScrollShadow>`; en el celular las tablas se vuelven listas.
-4. **Hablar como habla la persona.** Palabras que diría en voz alta, nada de jerga técnica
-   ("tenant", "organización") en la interfaz: en la app es "espacio".
-5. **Valores por defecto que ya funcionan.** Una pantalla nueva arranca llena con lo habitual.
-6. **Cada pantalla se entiende sola.** Si necesita un tutorial para usarse, se rediseña.
+People use the app from their phone. Every screen is designed for the phone first; desktop is the
+enlarged version, never the other way around.
+1. **Mobile first.** Every screen works from 360 px wide, and every BDD scenario runs in
+   Playwright's `mobile` project, not only in `desktop`.
+2. **One task, one screen, one main action.** The main button stays within thumb reach and
+   everything tappable is at least 44 × 44 px. In the workspace, the sections are the bottom bar
+   on the phone and the sidebar from 768 px (`AppShell`; a new section is one more item).
+3. **Nothing depends on hover, a physical keyboard or wide tables.** What scrolls sideways goes in
+   `<ScrollShadow>`; on the phone, tables become lists.
+4. **Talk the way people talk.** Words they would say out loud, no technical jargon ("tenant",
+   "organization") in the interface: in the app it's a "workspace".
+5. **Defaults that already work.** A new screen starts filled in with the usual values.
+6. **Every screen explains itself.** If it needs a tutorial to be used, it gets redesigned.
 
-### Pruebas: toda feature entra con sus pruebas
+### Tests: every feature comes with its tests
 
-Un cambio que agrega o cambia comportamiento sin pruebas no está terminado.
-- **TDD** para lógica pura y servicios de `core`: escribe la prueba que falla, luego el código.
-- **BDD** para flujos de usuario: un escenario `Feature / Scenario` con pasos `Given / When /
-  Then` (`test.step`) en `apps/e2e/tests`. Sin Cucumber.
-- UI exploratoria que todavía cambia mucho se prueba cuando se estabiliza, no antes.
+A change that adds or changes behavior without tests isn't finished.
+- **TDD** for pure logic and `core` services: write the failing test, then the code.
+- **BDD** for user flows: a `Feature / Scenario` with `Given / When / Then` steps (`test.step`) in
+  `apps/e2e/tests`. No Cucumber.
+- Exploratory UI that still changes a lot is tested once it settles, not before.
 
-| Proyecto      | Archivos                             | Para                                                        |
-| ------------- | ------------------------------------ | ----------------------------------------------------------- |
-| `unit`        | `*.test.ts`                          | Funciones puras, sin I/O                                    |
-| `integration` | `*.integration.test.ts`              | Servicios contra Postgres y Mailpit reales                  |
-| `browser`     | `apps/web/app/**/*.browser.test.tsx` | Componentes React en Chromium (Vitest Browser Mode)         |
-| Playwright    | `apps/e2e/tests/*.spec.ts`           | Flujos completos, accesibilidad con axe, móvil y escritorio |
+| Project       | Files                                | For                                                    |
+| ------------- | ------------------------------------ | ------------------------------------------------------ |
+| `unit`        | `*.test.ts`                          | Pure functions, no I/O                                 |
+| `integration` | `*.integration.test.ts`              | Services against real Postgres and Mailpit             |
+| `browser`     | `apps/web/app/**/*.browser.test.tsx` | React components in Chromium (Vitest Browser Mode)     |
+| Playwright    | `apps/e2e/tests/*.spec.ts`           | Full flows, accessibility with axe, mobile and desktop |
 
-**No uses Jest ni jsdom.** Los componentes se prueban en un navegador real con
-`vitest-browser-react`. Cada prueba de integración crea su propio espacio con
-`createTestTenant` (`@starter/db/testing`); nunca compartas filas entre pruebas ni limpies tablas.
+**Don't use Jest or jsdom.** Components are tested in a real browser with
+`vitest-browser-react`. Each integration test creates its own workspace with `createTestTenant`
+(`@starter/db/testing`); never share rows between tests or truncate tables.
 
-En Playwright (`apps/e2e/support/fixtures.ts`):
-- `ownerTest` empieza con la sesión compartida del worker (un dueño con el espacio "Mi empresa")
-  y su `workspace`; `test` + `signIn`/`signInWithWorkspace` es para login, onboarding o lo que
-  cambie la cuenta (idioma, cerrar sesión), porque la sesión del worker es compartida.
-- Lo que un escenario prepara en la base va por los casos de uso de `core` con
-  `workspace.tenant` o `workspaceOf(page)`, sobre la conexión `db` del worker; nunca una conexión
-  propia. Otro navegador (un compañero, otro celular) se abre con `newVisitor()`, sin sesión.
-- Lo que se prepara y se limpia solo es un fixture; una pantalla que recorren 3 o más specs, un
-  page object en `support/`; el resto, funciones (`navigation.ts` con `openSection`,
-  `mailpit.ts` con `getLinkFromEmail`/`uniqueEmail`). El page object hace y el escenario verifica.
-- Cada escenario prueba un comportamiento y lo dice en el título con su resultado ("crea su cuenta,
-  confirma el correo y entra a crear su espacio", no "registro funciona"), y cada Then verifica el
-  texto, número o estado exacto que ve la persona. Localizadores por rol, etiqueta o texto, en
-  español. `pnpm lint` rechaza en `tests/` (`apps/e2e/lint/*.grit`) `waitForTimeout`,
-  `networkidle`, `.only`, `force: true` y XPath.
-- Toda página nueva entra en `tests/accessibility.spec.ts` (claro y oscuro).
+In Playwright (`apps/e2e/support/fixtures.ts`):
+- `ownerTest` starts with the worker's shared session (an owner with the "My company" workspace)
+  and its `workspace`; `test` + `signIn`/`signInWithWorkspace` is for sign-in, onboarding or
+  anything that changes the account (language, sign out), because the worker's session is shared.
+- What a scenario prepares in the database goes through `core`'s use cases with
+  `workspace.tenant` or `workspaceOf(page)`, over the worker's `db` connection; never a connection
+  of its own. Another browser (a teammate, another phone) is opened with `newVisitor()`, without a
+  session.
+- What is set up and cleaned up on its own is a fixture; a screen that 3 or more specs walk
+  through, a page object in `support/`; the rest, functions (`navigation.ts` with `openSection`,
+  `mailpit.ts` with `getLinkFromEmail`/`uniqueEmail`). The page object acts and the scenario
+  checks.
+- Each scenario proves one behavior and says so in its title, with its result ("creates an
+  account, confirms the email and goes on to create a workspace", not "sign-up works"), and each
+  Then checks the exact text, number or state the person sees. Locators by role, label or text,
+  in English (the source language). `pnpm lint` rejects in `tests/` (`apps/e2e/lint/*.grit`)
+  `waitForTimeout`, `networkidle`, `.only`, `force: true` and XPath.
+- Every new page goes into `tests/accessibility.spec.ts` (light and dark).
 
-Agentes de Playwright (`.claude/agents`, con el servidor MCP `playwright-test` de `.mcp.json`;
-necesitan Postgres y Mailpit arriba): **Healer** repara una prueba que falla y nunca la salta ni
-la afloja (si la app está mal, lo reporta); **Planner** recorre la app desde `tests/seed.spec.ts`
-y escribe un plan en `apps/e2e/specs`; **Generator** convierte un plan en un spec, que se revisa
-como cualquier código. La skill `playwright-cli` abre la app, saca snapshots y trazas.
+Playwright agents (`.claude/agents`, with the `playwright-test` MCP server from `.mcp.json`; they
+need Postgres and Mailpit up): **Healer** fixes a failing test and never skips or loosens it (if
+the app is wrong, it reports it); **Planner** walks the app from `tests/seed.spec.ts` and writes a
+plan in `apps/e2e/specs`; **Generator** turns a plan into a spec, which is reviewed like any code.
+The `playwright-cli` skill opens the app and takes snapshots and traces.
 
-### Rendimiento: presupuesto de Lighthouse
+### Performance: Lighthouse budget
 
-`apps/web/lighthouserc.json` define el presupuesto (score ≥ 0.95, FCP ≤ 2.2 s, LCP ≤ 2.5 s,
-JS ≤ 170 KB transferidos por página, sin terceros). Si un cambio se pasa, **primero optimiza**
-(dividir código, quitar dependencias, `zod/mini`, carga diferida). Solo sube un límite con una
-justificación explícita. `pnpm --filter @starter/web lighthouse` audita claro, oscuro e inglés.
+`apps/web/lighthouserc.json` defines the budget (score ≥ 0.95, FCP ≤ 2.2 s, LCP ≤ 2.5 s,
+JS ≤ 170 KB transferred per page, no third parties). If a change goes over, **optimize first**
+(code splitting, dropping dependencies, `zod/mini`, lazy loading). Only raise a limit with an
+explicit justification. `pnpm --filter @starter/web lighthouse` audits light, dark and Spanish.
 
-### Accesibilidad
+### Accessibility
 
-Las páginas no deben tener violaciones de axe (WCAG 2.2 AA). Una sola `h1` por página
-(`PageHeader`), formularios con `TextField`, avisos con `role="status"` o `role="alert"`.
+Pages must have no axe violations (WCAG 2.2 AA). A single `h1` per page (`PageHeader`), forms
+with `TextField`, notices with `role="status"` or `role="alert"`.
 
-### Marca y temas
+### Brand and themes
 
-- Colores solo por tokens (`bg-primary`, `text-muted-foreground`, …) definidos con
-  `light-dark()` en `apps/web/app/app.css`. Un token nuevo de texto o fondo se agrega a los pares de
-  `app/lib/brand.test.ts`, que verifica contraste AA en claro y oscuro. Para cambiar la marca,
-  cambia `app.css` y `lib/brand.ts`; los correos toman los mismos colores (`packages/email/src/brand.ts`,
-  y `brand.test.ts` revisa que coincidan).
-- El tema (`system`/`light`/`dark`) vive en una cookie que lee el `loader` de `root.tsx`; el
-  servidor pinta `data-theme` en `<html>`, así no hay parpadeo.
-- Todo lo que se desplaza de lado va dentro de `<ScrollShadow>`. Nunca un `overflow-x-auto` suelto.
-- Correos (`@starter/email`): **siempre MJML**, nunca HTML a mano ni otra librería. Cada plantilla
-  es MJML (`@faire/mjml-react`) dentro de `<EmailLayout>`, en el idioma de quien lo recibe.
+- Colors only through tokens (`bg-primary`, `text-muted-foreground`, …) defined with
+  `light-dark()` in `apps/web/app/app.css`. A new text or background token is added to the pairs
+  in `app/lib/brand.test.ts`, which checks AA contrast in light and dark. To change the brand,
+  change `app.css` and `lib/brand.ts`; emails take the same colors (`packages/email/src/brand.ts`,
+  and `brand.test.ts` checks that they match).
+- The theme (`system`/`light`/`dark`) lives in a cookie that `root.tsx`'s `loader` reads; the
+  server paints `data-theme` on `<html>`, so there is no flicker.
+- Everything that scrolls sideways goes inside `<ScrollShadow>`. Never a loose `overflow-x-auto`.
+- Emails (`@starter/email`): **always MJML**, never hand-written HTML or another library. Each
+  template is MJML (`@faire/mjml-react`) inside `<EmailLayout>`, in the recipient's language.
 
-### Idiomas: toda feature entra en todos los idiomas a la vez
+### Languages: every feature ships in every language at once
 
-Dos idiomas (`locales` en `packages/i18n/src/locale.ts`): `es` (la fuente, de tú) y `en`. Un texto
-visible (páginas, botones, `aria-label`, avisos, correos) sin su versión en cada idioma no está
-terminado.
-1. Cada texto vive en `packages/i18n/src/messages/{es,en}/<sección>.ts`; nada escrito a mano en el
-   componente. `en` se declara con `satisfies Translation<typeof es>[…]`: una clave que falta
-   rompe `typecheck`, y `messages.test.ts` revisa placeholders y etiquetas.
-2. Los diccionarios **nunca llegan al bundle del cliente**: solo se importan desde `*.server.ts`.
-   Cada `loader` devuelve sus secciones con `i18n: translations(context, "…")`; la raíz manda
-   `common`. En el componente, `const t = useT()`; en `meta`, `metaT(matches)`; lo que arma el
-   servidor, `serverT(context)`. Etiquetas con `richText(t, key, { link: (text) => … })`.
-3. Los mensajes de `throw data(…)` y de `DomainError` solo los ve el desarrollador: van en inglés,
-   sin clave.
-4. El idioma lo decide `localeMiddleware`: cookie `lang` > `user.locale` > `Accept-Language` >
-   inglés. Se cambia en Ajustes (`<LanguagePicker />`, POST a `/locale`).
-5. Las pruebas usan los textos de la fuente (`es`). Rutas, parámetros, archivos y claves en inglés.
-6. Otro idioma: agrégalo a `locales`, crea su carpeta en `messages/` y corre `pnpm typecheck`.
+Two languages (`locales` in `packages/i18n/src/locale.ts`): `en` (the source) and `es` (informal
+"tú"). Visible text (pages, buttons, `aria-label`, notices, emails) without its version in each
+language isn't finished.
+1. Each text lives in `packages/i18n/src/messages/{en,es}/<section>.ts`; nothing hardcoded in the
+   component. `es` is declared with `satisfies Translation<typeof en>[…]`: a missing key breaks
+   `typecheck`, and `messages.test.ts` checks placeholders and tags.
+2. Dictionaries **never reach the client bundle**: they are only imported from `*.server.ts`.
+   Each `loader` returns its sections with `i18n: translations(context, "…")`; the root sends
+   `common`. In the component, `const t = useT()`; in `meta`, `metaT(matches)`; what the server
+   builds, `serverT(context)`. Tags with `richText(t, key, { link: (text) => … })`.
+3. Messages in `throw data(…)` and `DomainError` are only seen by developers: they go in English,
+   without a key.
+4. `localeMiddleware` decides the language: `lang` cookie > `user.locale` > `Accept-Language` >
+   English. It is changed in Settings (`<LanguagePicker />`, POST to `/locale`).
+5. Tests use the source texts (`en`). Routes, parameters, files and keys in English.
+6. Another language: add it to `locales`, create its folder in `messages/` and run
+   `pnpm typecheck`.
 
-### Entrar: los métodos se eligen por proyecto
+### Sign-in: the methods are picked per project
 
-`AUTH_METHODS` (`.env`, lo pregunta `pnpm run setup`) enciende `magic-link`, `password` y
-`google`, en cualquier combinación. `/login` muestra solo los encendidos (`lib/sign-in.server.ts`)
-y las rutas de un método apagado responden 404 (`requireMethod`).
-- **Enlace por correo**: Better Auth `magicLink`, token guardado con hash, 5 minutos.
-- **Contraseña**: `/sign-up` exige confirmar el correo antes de entrar; `/forgot-password` y
-  `/reset-password` la cambian y cierran las demás sesiones.
-- **Google**: necesita `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` (el servidor no arranca con
-  `google` sin ellos). Un correo probado por Google, un enlace o una confirmación es la misma
-  cuenta.
-- Las acciones pasan por la API de servidor de Better Auth (`auth.api.*`) después de nuestros
-  propios controles (límites, `safeRedirect`). Los endpoints que no usamos por HTTP van en
-  `disabledOrganizationPaths`.
-- `/dev/sign-in` entra como cualquier usuario en `pnpm dev`. Tres candados lo dejan fuera de
-  producción: `routes.ts` no registra la ruta en el build, `devSignIn` solo se enciende con
-  `import.meta.env.DEV` y `requireDevTools` exige localhost.
+`AUTH_METHODS` (`.env`, asked by `pnpm run setup`) turns on `magic-link`, `password` and
+`google`, in any combination. `/login` only shows the ones turned on (`lib/sign-in.server.ts`)
+and the routes of a method that is off respond 404 (`requireMethod`).
+- **Email link**: Better Auth `magicLink`, token stored hashed, 5 minutes.
+- **Password**: `/sign-up` requires confirming the email before signing in; `/forgot-password`
+  and `/reset-password` change it and close the other sessions.
+- **Google**: needs `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` (the server won't start with
+  `google` without them). An email proven by Google, a link or a confirmation is the same account.
+- Actions go through Better Auth's server API (`auth.api.*`) after our own checks (rate limits,
+  `safeRedirect`). Endpoints we don't use over HTTP go in `disabledOrganizationPaths`.
+- `/dev/sign-in` signs in as any user in `pnpm dev`. Three locks keep it out of production:
+  `routes.ts` doesn't register the route in the build, `devSignIn` is only on with
+  `import.meta.env.DEV` and `requireDevTools` requires localhost.
 
 ### Multi-tenant
 
-Todo caso de uso de `core` recibe un `TenantContext` y filtra por `organizationId`.
-- El espacio va en la URL (`/app/:workspace/…`) y `requireTenant` lo resuelve con
-  `resolveTenant`, que verifica la membresía; nunca tomes el espacio de la sesión ni de un campo
-  del formulario. Un espacio ajeno responde 404, igual que uno inexistente.
-- La sesión solo recuerda el último espacio usado, para que `/app` y el próximo login lo abran.
-- Las únicas entradas sin tenant son las públicas, y cada una se justifica aquí.
-- Una sección nueva del espacio: `routes/app/<sección>.tsx` bajo `:workspace` en `routes.ts`, su
-  item en `AppShell`, su namespace de i18n, su caso de uso en `core` con prueba de integración
-  (incluido que otro espacio no ve sus datos), su escenario BDD y su línea en
+Every `core` use case takes a `TenantContext` and filters by `organizationId`.
+- The workspace goes in the URL (`/app/:workspace/…`) and `requireTenant` resolves it with
+  `resolveTenant`, which checks the membership; never take the workspace from the session or from
+  a form field. Someone else's workspace responds 404, the same as one that doesn't exist.
+- The session only remembers the last workspace used, so `/app` and the next sign-in open it.
+- The only entry points without a tenant are the public ones, and each one is justified here.
+- A new workspace section: `routes/app/<section>.tsx` under `:workspace` in `routes.ts`, its item
+  in `AppShell`, its i18n namespace, its `core` use case with an integration test (including that
+  another workspace can't see its data), its BDD scenario and its line in
   `accessibility.spec.ts`.
 
-### Seguridad
+### Security
 
-- Límites de intentos con `hitRateLimit` (`core/src/rate-limits.ts`): un upsert en Postgres
-  (`rate_limit`), así valen en todas las máquinas. En la web, `withinRateLimits` y las reglas de
-  `app/lib/rate-limit.server.ts`; el limitador de Better Auth guarda ahí también. **Toda acción
-  que manda un correo a una dirección escrita por alguien lleva su límite.** La IP sale de
-  `CLIENT_IP_HEADER`; nunca de `X-Forwarded-For` sin un proxy que lo limpie.
-  `AUTH_RATE_LIMIT=off` (solo e2e) los apaga.
-- `securityMiddleware` (primero en `root.tsx`) pone CSP con nonce (`entry.server.tsx` lo pasa a
-  `ServerRouter`), `X-Frame-Options`, HSTS sobre HTTPS y rechaza cuerpos chunked (411) o de más de
-  6 MB (413). Nada de scripts en línea ni de terceros: si algo nuevo necesita otro origen, se
-  agrega a la política con su razón.
-- Redirects con `safeRedirect` (`app/lib/safe-redirect.ts`), nunca a mano.
-- Secretos: cada uso tiene su llave derivada de `BETTER_AUTH_SECRET` con `deriveSecret`
-  (`secrets` en `services.server.ts`); fuera de localhost se rechaza el valor de `.env.example`.
-- `allowedActionOrigins` (`app/lib/action-origins.ts`) lleva el host de producción, para el
-  chequeo de CSRF de React Router detrás del proxy de Fly.
-- `pnpm audit --prod --audit-level high` corre en CI; un aviso aceptado va a `auditConfig` de
-  `pnpm-workspace.yaml` con su razón.
+- Rate limits with `hitRateLimit` (`core/src/rate-limits.ts`): an upsert in Postgres
+  (`rate_limit`), so they hold across every machine. In the web, `withinRateLimits` and the rules
+  in `app/lib/rate-limit.server.ts`; Better Auth's limiter stores there too. **Every action that
+  sends an email to an address someone typed gets its limit.** The IP comes from
+  `CLIENT_IP_HEADER`; never from `X-Forwarded-For` without a proxy that cleans it.
+  `AUTH_RATE_LIMIT=off` (e2e only) turns them off.
+- `securityMiddleware` (first in `root.tsx`) sets a CSP with a nonce (`entry.server.tsx` passes it
+  to `ServerRouter`), `X-Frame-Options`, HSTS over HTTPS and rejects chunked bodies (411) or
+  bodies over 6 MB (413). No inline or third-party scripts: if something new needs another
+  origin, it is added to the policy with its reason.
+- Redirects with `safeRedirect` (`app/lib/safe-redirect.ts`), never by hand.
+- Secrets: each use has its own key derived from `BETTER_AUTH_SECRET` with `deriveSecret`
+  (`secrets` in `services.server.ts`); outside localhost the `.env.example` value is rejected.
+- `allowedActionOrigins` (`app/lib/action-origins.ts`) carries the production host, for React
+  Router's CSRF check behind Fly's proxy.
+- `pnpm audit --prod --audit-level high` runs in CI; an accepted advisory goes into
+  `auditConfig` in `pnpm-workspace.yaml` with its reason.
 
-### Base de datos
+### Database
 
-Cambia el esquema en `packages/db/src/schema`, luego `pnpm db:generate` y `pnpm db:migrate`.
-Nunca `drizzle-kit push` contra producción. Cada migración debe ser compatible con la versión
-anterior de la app (los despliegues no deshacen migraciones).
+Change the schema in `packages/db/src/schema`, then `pnpm db:generate` and `pnpm db:migrate`.
+Never `drizzle-kit push` against production. Each migration must be compatible with the previous
+version of the app (deploys don't undo migrations).
 
-### Variables de entorno
+### Environment variables
 
-Toda variable nueva va en `.env.example` con un comentario de qué es y en el esquema de
-`packages/env`. Si es un secreto local, agrega su generador en `tooling/setup/index.ts` para que
-`pnpm run setup` lo cree solo; si solo existe en local, en `localOnly` de
-`tooling/fly-secrets/secrets.ts`. Una URL pública nueva va en `[env]` de los dos `fly.*.toml`.
+Every new variable goes in `.env.example` with a comment saying what it is, and in the
+`packages/env` schema. If it is a local secret, add its generator in `tooling/setup/index.ts` so
+`pnpm run setup` creates it; if it only exists locally, in `localOnly` of
+`tooling/fly-secrets/secrets.ts`. A new public URL goes in `[env]` of both `fly.*.toml`.
 
-## Flujo de trabajo
+## Workflow
 
-- **Toda rama que se va a integrar a `main` tiene antes lo último de `main`**: `git fetch origin
-  main` y `git merge origin/main` (resuelve conflictos, regenera con su CLI lo generado, como una
-  migración que choca de número), corre lint, typecheck y pruebas, sube y espera el CI en verde.
-- CI (`.github/workflows/ci.yml`): cada push corre `pnpm lint`, `pnpm typecheck` y `pnpm test`
-  (unit, integration con Postgres y Mailpit, browser).
-- Los e2e (`.github/workflows/e2e.yml`) corren a pedido: `pnpm e2e:remote [rama] [--project
-  desktop|mobile] [--grep "texto"]` (necesita `gh auth login`), o desde Actions. Córrelos antes de
-  integrar un cambio que toca flujos. En local: `pnpm test:e2e`.
-- Producción en Fly.io (`docs/deploy.md`): `pnpm release [patch|minor|major|x.y.z]` crea el tag y
-  `.github/workflows/deploy.yml` despliega la API (con migraciones) y luego la web. Secretos con
-  `pnpm fly:secrets` desde `.env.production` (nunca en git).
-- El hook de pre-commit (Lefthook) solo formatea con Biome.
-- Una feature nueva sigue la skill `nueva-feature` (`.agents/skills/nueva-feature`).
+- **Every branch that will be merged into `main` first gets the latest `main`**: `git fetch
+  origin main` and `git merge origin/main` (resolve conflicts, regenerate generated files with
+  their CLI, such as a migration whose number clashes), run lint, typecheck and tests, push and
+  wait for CI to be green.
+- CI (`.github/workflows/ci.yml`): every push runs `pnpm lint`, `pnpm typecheck` and `pnpm test`
+  (unit, integration with Postgres and Mailpit, browser).
+- The e2e tests (`.github/workflows/e2e.yml`) run on demand: `pnpm e2e:remote [branch] [--project
+  desktop|mobile] [--grep "text"]` (needs `gh auth login`), or from Actions. Run them before
+  merging a change that touches flows. Locally: `pnpm test:e2e`.
+- Production on Fly.io (`docs/deploy.md`): `pnpm release [patch|minor|major|x.y.z]` creates the
+  tag and `.github/workflows/deploy.yml` deploys the API (with migrations) and then the web.
+  Secrets with `pnpm fly:secrets` from `.env.production` (never in git).
+- The pre-commit hook (Lefthook) only formats with Biome.
+- A new feature follows the `new-feature` skill (`.agents/skills/new-feature`).
 
-## Comandos
+## Commands
 
 ```bash
 corepack enable && pnpm install
-pnpm run setup           # .env, secretos, métodos de login, hooks, Chromium, Docker, migraciones
-pnpm dev                 # web :5173, api :3001 · /dev/sign-in para entrar como cualquiera
+pnpm run setup           # .env, secrets, sign-in methods, hooks, Chromium, Docker, migrations
+pnpm dev                 # web :5173, api :3001 · /dev/sign-in to sign in as anyone
 pnpm test                # Vitest: unit + integration + browser
-pnpm test:e2e            # Playwright en local
-pnpm e2e:remote [rama]   # Playwright en GitHub Actions
+pnpm test:e2e            # Playwright locally
+pnpm e2e:remote [branch] # Playwright on GitHub Actions
 pnpm typecheck && pnpm lint
-pnpm db:generate && pnpm db:migrate   # después de cambiar el esquema
-pnpm release [patch|minor|major|x.y.z]  # publica main en producción (tag → Fly.io)
-pnpm fly:secrets [--check]  # manda .env.production a los secretos de Fly
+pnpm db:generate && pnpm db:migrate   # after changing the schema
+pnpm release [patch|minor|major|x.y.z]  # publishes main to production (tag → Fly.io)
+pnpm fly:secrets [--check]  # sends .env.production to Fly's secrets
 pnpm --filter @starter/web lighthouse
 ```

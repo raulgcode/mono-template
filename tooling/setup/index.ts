@@ -47,7 +47,7 @@ function done(message: string): void {
 function run(command: string, args: string[]): void {
   const result = spawnSync(command, args, { cwd: root, stdio: "inherit" });
   if (result.status !== 0) {
-    console.error(`\n✗ Falló: ${command} ${args.join(" ")}`);
+    console.error(`\n✗ Failed: ${command} ${args.join(" ")}`);
     process.exit(result.status ?? 1);
   }
 }
@@ -81,7 +81,7 @@ function checkNode(): void {
   const major = process.versions.node.split(".")[0];
   if (major !== wanted) {
     console.warn(
-      `  ⚠ Usas Node ${process.versions.node}; el proyecto espera Node ${wanted} (.nvmrc).`,
+      `  ⚠ You are on Node ${process.versions.node}; the project expects Node ${wanted} (.nvmrc).`,
     );
   } else {
     done(`Node ${process.versions.node}`);
@@ -96,10 +96,10 @@ function writeEnv(): boolean {
   const { content, added, generated } = buildEnvFile({ example, current, generators });
 
   if (content !== current) writeFileSync(envPath, content, { mode: 0o600 });
-  if (current === undefined) done("Creado desde .env.example");
-  else if (added.length > 0) done(`Agregadas: ${added.join(", ")}`);
-  else if (generated.length === 0) done("Ya estaba al día");
-  if (generated.length > 0) done(`Secretos generados: ${generated.join(", ")}`);
+  if (current === undefined) done("Created from .env.example");
+  else if (added.length > 0) done(`Added: ${added.join(", ")}`);
+  else if (generated.length === 0) done("Already up to date");
+  if (generated.length > 0) done(`Generated secrets: ${generated.join(", ")}`);
   return current === undefined;
 }
 
@@ -110,33 +110,31 @@ function currentMethods(): AuthMethod[] {
 
 /** Asks how people sign in: on the first setup, or whenever `--auth` says. */
 async function chooseAuthMethods(firstRun: boolean): Promise<AuthMethod[]> {
-  step("Cómo entra la gente");
+  step("How people sign in");
   const current = currentMethods();
   if (flags.auth !== undefined) {
     const methods = parseAuthChoice(flags.auth, current);
     if (!methods) {
-      console.error(`  ✗ --auth acepta ${authMethods.join(", ")} separados por comas`);
+      console.error(`  ✗ --auth takes ${authMethods.join(", ")}, separated by commas`);
       process.exit(1);
     }
     return methods;
   }
   if (!firstRun || !interactive) {
-    done(
-      `${current.join(", ")} (para cambiarlo: pnpm run setup --auth magic-link,password,google)`,
-    );
+    done(`${current.join(", ")} (to change it: pnpm run setup --auth magic-link,password,google)`);
     return current;
   }
-  console.log("  Elige uno o varios, separados por comas:");
+  console.log("  Pick one or more, separated by commas:");
   authMethods.forEach((method, index) => {
     console.log(`    ${index + 1}. ${authMethodLabels[method]}`);
   });
   while (true) {
     const answer = await ask(
-      `  Métodos [${current.map((m) => authMethods.indexOf(m) + 1).join(",")}]: `,
+      `  Methods [${current.map((m) => authMethods.indexOf(m) + 1).join(",")}]: `,
     );
     const methods = parseAuthChoice(answer, current);
     if (methods?.length) return methods;
-    console.log(`  Escribe números del 1 al ${authMethods.length}, por ejemplo 1,2`);
+    console.log(`  Type numbers from 1 to ${authMethods.length}, for example 1,2`);
   }
 }
 
@@ -151,15 +149,15 @@ async function configureGoogle(methods: AuthMethod[]): Promise<AuthMethod[]> {
   let clientSecret = flags["google-client-secret"] ?? keys.get("GOOGLE_CLIENT_SECRET") ?? "";
   if ((!clientId || !clientSecret) && interactive) {
     console.log(
-      "  Google Cloud → APIs y servicios → Credenciales → ID de cliente de OAuth (Aplicación web),\n" +
-        "  con el URI de redirección http://localhost:5173/api/auth/callback/google",
+      "  Google Cloud → APIs & Services → Credentials → OAuth client ID (Web application),\n" +
+        "  with the redirect URI http://localhost:5173/api/auth/callback/google",
     );
-    clientId ||= await ask("  GOOGLE_CLIENT_ID (Enter para dejar Google para después): ");
+    clientId ||= await ask("  GOOGLE_CLIENT_ID (Enter to leave Google for later): ");
     if (clientId) clientSecret ||= await ask("  GOOGLE_CLIENT_SECRET: ");
   }
   if (!clientId || !clientSecret) {
     console.log(
-      "  ↷ Google queda apagado hasta que pongas GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en .env",
+      "  ↷ Google stays off until you set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env",
     );
     const rest = methods.filter((method) => method !== "google");
     return rest.length > 0 ? rest : ["magic-link"];
@@ -171,19 +169,19 @@ async function configureGoogle(methods: AuthMethod[]): Promise<AuthMethod[]> {
 
 /** Postgres and Mailpit in Docker; without Docker, a Postgres already at DATABASE_URL works too. */
 function startServices(): void {
-  step("Postgres y Mailpit (Docker)");
+  step("Postgres and Mailpit (Docker)");
   const docker = spawnSync("docker", ["info"], { stdio: "ignore" });
   if (docker.error || docker.status !== 0) {
     console.warn(
-      "  ⚠ Docker no está instalado o no está corriendo. Ábrelo y vuelve a correr pnpm run setup,\n" +
-        "    o deja un Postgres en DATABASE_URL (con la base _test) y un SMTP en SMTP_HOST.",
+      "  ⚠ Docker isn't installed or isn't running. Start it and run pnpm run setup again,\n" +
+        "    or provide a Postgres at DATABASE_URL (with the _test database) and an SMTP at SMTP_HOST.",
     );
     return;
   }
   const services = capture("docker", ["compose", "ps", "--status", "running", "--services"]);
   const running = services?.split("\n") ?? [];
   if (running.includes("postgres") && running.includes("mailpit")) {
-    done("Ya están corriendo");
+    done("Already running");
   } else {
     run("pnpm", ["db:up"]);
   }
@@ -199,35 +197,33 @@ done(`AUTH_METHODS=${methods.join(",")}`);
 step("Git hooks (Lefthook)");
 const preCommit = join(root, ".git/hooks/pre-commit");
 if (existsSync(preCommit) && readFileSync(preCommit, "utf8").includes("lefthook")) {
-  done("Ya instalados");
+  done("Already installed");
 } else if (existsSync(join(root, ".git"))) {
   run("pnpm", ["exec", "lefthook", "install"]);
 } else {
-  console.log(
-    "  ↷ Sin repositorio de git todavía: corre pnpm exec lefthook install después de git init",
-  );
+  console.log("  ↷ No git repository yet: run pnpm exec lefthook install after git init");
 }
 
-step("Chromium para Playwright y Vitest Browser Mode");
+step("Chromium for Playwright and Vitest Browser Mode");
 const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ?? chromium.executablePath();
 if (existsSync(chromiumPath)) {
-  done("Ya instalado");
+  done("Already installed");
 } else if (process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD) {
-  console.log("  ↷ Omitido: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD está definido");
+  console.log("  ↷ Skipped: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD is set");
 } else {
   run("pnpm", ["exec", "playwright", "install", "chromium"]);
 }
 
 startServices();
 
-step("Migraciones");
+step("Migrations");
 run("pnpm", ["--silent", "db:migrate"]);
 
 console.log(`
-✓ Listo. Siguientes pasos:
+✓ Done. Next steps:
   pnpm dev        web http://localhost:5173 · api http://localhost:3001
-                  entra como cualquiera en http://localhost:5173/dev/sign-in
+                  sign in as anyone at http://localhost:5173/dev/sign-in
   pnpm test       Vitest (unit, integration, browser)
   pnpm test:e2e   Playwright
-  Correos de desarrollo (enlaces para entrar, confirmaciones) en Mailpit: http://localhost:8025
+  Development emails (sign-in links, confirmations) land in Mailpit: http://localhost:8025
 `);

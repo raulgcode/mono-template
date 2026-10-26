@@ -1,6 +1,3 @@
-import type { Translation } from "../../translate";
-import type { es } from "../es";
-
 export const auth = {
   title: "Sign in",
   description: "Sign in to your account.",
@@ -45,4 +42,4 @@ export const auth = {
   resetInvalid: "The link expired or was already used. Ask for another one.",
   resetDone: "Done, you can sign in with your new password.",
   backToSignIn: "Back to sign in",
-} as const satisfies Translation<typeof es>["auth"];
+} as const;

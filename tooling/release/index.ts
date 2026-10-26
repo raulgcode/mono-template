@@ -41,18 +41,18 @@ const { values, positionals } = parseArgs({
 });
 
 if (run("git", ["fetch", "--quiet", "--tags", "origin", "main"]) !== 0) {
-  fail("No pude traer main y los tags de GitHub");
+  fail("Couldn't fetch main and the tags from GitHub");
 }
 if (capture("git", ["status", "--porcelain"])) {
-  fail("Hay cambios sin commit: súbelos a main o guárdalos antes de publicar");
+  fail("There are uncommitted changes: push them to main or stash them before releasing");
 }
 const head = capture("git", ["rev-parse", "HEAD"]);
 const main = capture("git", ["rev-parse", "origin/main"]);
 if (!head || head !== main) {
-  fail("Estás fuera de origin/main: haz git checkout main && git pull, y vuelve a correrlo");
+  fail("You are not on origin/main: git checkout main && git pull, then run it again");
 }
 if (capture("git", ["tag", "--points-at", head])?.match(/^v\d/m)) {
-  fail("Este commit ya tiene una versión: no hay nada nuevo que publicar");
+  fail("This commit already has a version: there is nothing new to release");
 }
 
 const tags = (capture("git", ["tag", "--list", "v*"]) ?? "").split("\n").filter(Boolean);
@@ -64,27 +64,27 @@ try {
 }
 
 const subject = capture("git", ["log", "-1", "--format=%h %s", head]);
-console.log(`Publicar ${tag} con ${subject}`);
+console.log(`Release ${tag} with ${subject}`);
 if (!values.yes) {
   const prompt = createInterface({ input: process.stdin, output: process.stdout });
-  const answer = await prompt.question("¿Sale a producción? (s/N) ");
+  const answer = await prompt.question("Ship it to production? (y/N) ");
   prompt.close();
-  if (!/^(s|si|sí|y|yes)$/i.test(answer.trim())) fail("No publiqué nada");
+  if (!/^(y|yes)$/i.test(answer.trim())) fail("Nothing was released");
 }
 
 if (run("git", ["tag", "--annotate", tag, "--message", `${tag}`, head]) !== 0) {
-  fail(`No pude crear el tag ${tag}`);
+  fail(`Couldn't create the tag ${tag}`);
 }
 if (run("git", ["push", "origin", `refs/tags/${tag}`]) !== 0) {
   run("git", ["tag", "--delete", tag]);
-  fail(`GitHub no aceptó el tag ${tag}`);
+  fail(`GitHub didn't accept the tag ${tag}`);
 }
-console.log(`✓ ${tag} está en GitHub: el despliegue arranca en Actions`);
+console.log(`✓ ${tag} is on GitHub: the deploy starts in Actions`);
 
 // In Actions the same workflow deploys right after this step: there is nothing to follow.
 if (values["no-watch"] || process.env.GITHUB_ACTIONS) process.exit(0);
 if (!capture("gh", ["auth", "status"])) {
-  console.log("  Síguelo en la pestaña Actions de GitHub (o instala gh para verlo aquí).");
+  console.log("  Follow it in GitHub's Actions tab (or install gh to watch it here).");
   process.exit(0);
 }
 
@@ -108,7 +108,7 @@ for (let attempt = 0; attempt < 15 && !runId; attempt++) {
   ]);
 }
 if (!runId) {
-  console.log("  No encontré la corrida todavía: búscala en la pestaña Actions de GitHub.");
+  console.log("  Couldn't find the run yet: look for it in GitHub's Actions tab.");
   process.exit(0);
 }
 process.exit(run("gh", ["run", "watch", runId, "--exit-status"]) === 0 ? 0 : 1);

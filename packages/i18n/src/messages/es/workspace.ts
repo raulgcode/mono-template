@@ -1,3 +1,6 @@
+import type { Translation } from "../../translate";
+import type { en } from "../en";
+
 /** /app: the onboarding, the workspace's layout and its home. */
 export const workspace = {
   onboardingTitle: "Crea tu espacio",
@@ -13,4 +16,4 @@ export const workspace = {
   homeTitle: "Inicio",
   homeHeading: "Hola, {name}",
   homeIntro: "Este es el inicio de {workspace}. Aquí va la primera pantalla de tu proyecto.",
-} as const;
+} as const satisfies Translation<typeof en>["workspace"];

@@ -32,7 +32,7 @@ export async function action(args: Route.ActionArgs) {
   const { request, context } = args;
   requireMethod("password");
   const formData = await request.clone().formData();
-  // "Continuar con Google" signs up too: the same action as /login.
+  // "Continue with Google" signs up too: the same action as /login.
   if (formData.get("intent") === "google") return signInAction(args);
 
   const submission = parseWithZod(formData, { schema: signUpSchema });

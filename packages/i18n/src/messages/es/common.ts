@@ -1,3 +1,6 @@
+import type { Translation } from "../../translate";
+import type { en } from "../en";
+
 /** What every page uses: the header, the menus, the error page. The root route loads it. */
 export const common = {
   appName: "Starter",
@@ -19,4 +22,4 @@ export const common = {
   errorHome: "Ir al inicio",
   notFoundTitle: "No encontramos esta página",
   notFoundDetails: "Puede que el enlace esté incompleto o que la página ya no exista.",
-} as const;
+} as const satisfies Translation<typeof en>["common"];

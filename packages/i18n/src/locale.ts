@@ -1,21 +1,21 @@
-export const locales = ["es", "en"] as const;
+export const locales = ["en", "es"] as const;
 export type Locale = (typeof locales)[number];
 
-/** Spanish is the source language: every text is written in Spanish first. */
-export const defaultLocale: Locale = "es";
+/** English is the source language: every text is written in English first. */
+export const defaultLocale: Locale = "en";
 
-/** What a browser in a language we don't speak gets: English, not the source language. */
-export const fallbackLocale: Locale = "en";
+/** What a browser in a language we don't speak gets: the source language. */
+export const fallbackLocale: Locale = defaultLocale;
 
 /** Each language named in itself, for the language picker. */
 export const localeNames = {
-  es: "Español",
   en: "English",
+  es: "Español",
 } as const satisfies Record<Locale, string>;
 
 /**
  * The language a tag falls back to when its region isn't one of ours: `es-MX` → `es`. A new
- * language goes in `locales`, here and in `messages/` (see AGENTS.md, "Idiomas").
+ * language goes in `locales`, here and in `messages/` (see AGENTS.md, "Languages").
  */
 const byLanguage: Record<string, Locale> = { es: "es", en: "en" };
 

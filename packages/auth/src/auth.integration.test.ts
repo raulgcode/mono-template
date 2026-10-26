@@ -26,7 +26,7 @@ function authWith(methods: AuthMethod[] = ["magic-link"], sent: SendEmailInput[]
 const uniqueEmail = () => `user-${crypto.randomUUID().slice(0, 8)}@test.starter.example`;
 
 describe("Google", () => {
-  it("manda a Google con nuestro callback y guarda el state", async () => {
+  it("sends to Google with our callback and keeps the state", async () => {
     const auth = authWith(["google"]);
 
     const { headers, response } = await auth.api.signInSocial({
@@ -42,7 +42,7 @@ describe("Google", () => {
     expect(headers.get("set-cookie")).toContain("state");
   });
 
-  it("no se ofrece si no está entre los métodos", async () => {
+  it("isn't offered when it isn't one of the methods", async () => {
     await expect(
       authWith(["magic-link"]).api.signInSocial({
         body: { provider: "google", callbackURL: "/app" },
@@ -50,7 +50,7 @@ describe("Google", () => {
     ).rejects.toThrow();
   });
 
-  it("sin credenciales no arranca", () => {
+  it("doesn't start without credentials", () => {
     expect(() =>
       createAuth({
         db: connection.db,
@@ -63,14 +63,14 @@ describe("Google", () => {
   });
 });
 
-describe("usuario y contraseña", () => {
-  it("al crear la cuenta manda el correo de confirmación y no abre sesión", async () => {
+describe("email and password", () => {
+  it("signing up sends the confirmation email and opens no session", async () => {
     const sent: SendEmailInput[] = [];
     const auth = authWith(["password"], sent);
     const email = uniqueEmail();
 
     const result = await auth.api.signUpEmail({
-      body: { name: "Ana", email, password: "una-clave-larga", locale: "en" },
+      body: { name: "Ana", email, password: "a-long-password", locale: "en" },
     });
 
     expect(result.token).toBeNull();
@@ -79,37 +79,37 @@ describe("usuario y contraseña", () => {
     ]);
   });
 
-  it("no deja entrar con la contraseña antes de confirmar el correo", async () => {
+  it("doesn't let the password in before the email is confirmed", async () => {
     const auth = authWith(["password"]);
     const email = uniqueEmail();
-    await auth.api.signUpEmail({ body: { name: "Ana", email, password: "una-clave-larga" } });
+    await auth.api.signUpEmail({ body: { name: "Ana", email, password: "a-long-password" } });
 
     await expect(
-      auth.api.signInEmail({ body: { email, password: "una-clave-larga" } }),
+      auth.api.signInEmail({ body: { email, password: "a-long-password" } }),
     ).rejects.toMatchObject({ status: "FORBIDDEN" });
   });
 
-  it("apagada, no se puede crear cuenta con contraseña", async () => {
+  it("when off, no account can be created with a password", async () => {
     await expect(
       authWith(["magic-link"]).api.signUpEmail({
-        body: { name: "Ana", email: uniqueEmail(), password: "una-clave-larga" },
+        body: { name: "Ana", email: uniqueEmail(), password: "a-long-password" },
       }),
     ).rejects.toThrow();
   });
 });
 
-describe("enlace mágico", () => {
-  it("manda el enlace en el idioma de la página", async () => {
+describe("magic link", () => {
+  it("sends the link in the page's language", async () => {
     const sent: SendEmailInput[] = [];
     const email = uniqueEmail();
 
     await authWith(["magic-link"], sent).api.signInMagicLink({
-      body: { email, metadata: { locale: "en" } },
+      body: { email, metadata: { locale: "es" } },
       headers: new Headers(),
     });
 
     expect(sent.map((message) => [message.to, message.subject])).toEqual([
-      [email, "Your sign-in link"],
+      [email, "Tu enlace para entrar"],
     ]);
   });
 });
@@ -122,8 +122,8 @@ async function activeOrganizationOf(sessionId: string) {
   return row?.id;
 }
 
-describe("espacio activo al entrar", () => {
-  it("abre el espacio de la persona en cada sesión nueva", async () => {
+describe("active workspace on sign-in", () => {
+  it("opens the person's workspace on every new session", async () => {
     const tenant = await createTestTenant(connection.db);
 
     const internal = (await authWith().$context).internalAdapter;
@@ -132,7 +132,7 @@ describe("espacio activo al entrar", () => {
     expect(await activeOrganizationOf(session.id)).toBe(tenant.organizationId);
   });
 
-  it("deja la sesión sin espacio si todavía no creó uno", async () => {
+  it("leaves the session without a workspace until they create one", async () => {
     const userId = await createTestUser(connection.db);
 
     const session = await (await authWith().$context).internalAdapter.createSession(userId);
@@ -140,7 +140,7 @@ describe("espacio activo al entrar", () => {
     expect(await activeOrganizationOf(session.id)).toBeNull();
   });
 
-  it("con varios espacios, abre el que usó en su última sesión", async () => {
+  it("with several workspaces, opens the one used in the last session", async () => {
     const first = await createTestTenant(connection.db);
     const second = await createTestTenant(connection.db, { userId: first.userId });
     const internal = (await authWith().$context).internalAdapter;
@@ -168,7 +168,7 @@ describe("entrar como cualquiera (solo /dev/sign-in en pnpm dev)", () => {
       devSignIn: true,
     });
 
-  it("entra y deja la cookie de sesión", async () => {
+  it("signs in and sets the session cookie", async () => {
     const tenant = await createTestTenant(connection.db);
 
     const { headers } = await devAuth().api.devSignIn({
@@ -183,13 +183,13 @@ describe("entrar como cualquiera (solo /dev/sign-in en pnpm dev)", () => {
     expect(session?.user.id).toBe(tenant.userId);
   });
 
-  it("apagado (como en producción) no deja entrar a nadie", async () => {
+  it("when off (as in production) lets nobody in", async () => {
     const tenant = await createTestTenant(connection.db);
 
     await expect(authWith().api.devSignIn({ body: { userId: tenant.userId } })).rejects.toThrow();
   });
 
-  it("no existe por HTTP aunque esté encendido", async () => {
+  it("doesn't exist over HTTP even when on", async () => {
     const tenant = await createTestTenant(connection.db);
 
     const response = await devAuth().handler(
@@ -204,7 +204,7 @@ describe("entrar como cualquiera (solo /dev/sign-in en pnpm dev)", () => {
   });
 });
 
-describe("los endpoints de miembros y espacios no existen por HTTP", () => {
+describe("member and workspace endpoints don't exist over HTTP", () => {
   it.each(["invite-member", "update-member-role", "remove-member", "create"])(
     "/organization/%s responde 404",
     async (path) => {

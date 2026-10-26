@@ -65,24 +65,24 @@ describe("contrastRatio", () => {
   });
 });
 
-describe.each(["light", "dark"] as const)("tema %s", (theme) => {
-  it.each(textPairs)("%s sobre %s cumple AA para texto (4.5:1)", (text, surface) => {
+describe.each(["light", "dark"] as const)("%s theme", (theme) => {
+  it.each(textPairs)("%s on %s meets AA for text (4.5:1)", (text, surface) => {
     expect(contrastRatio(token(text)[theme], token(surface)[theme])).toBeGreaterThanOrEqual(4.5);
   });
 
-  it.each(graphicPairs)("%s sobre %s cumple 3:1 para gráficos", (graphic, surface) => {
+  it.each(graphicPairs)("%s on %s meets 3:1 for graphics", (graphic, surface) => {
     expect(contrastRatio(token(graphic)[theme], token(surface)[theme])).toBeGreaterThanOrEqual(3);
   });
 });
 
 describe("theme-color", () => {
-  it("coincide con el fondo de cada tema", () => {
+  it("matches each theme's background", () => {
     expect(token("background")).toEqual(themeBackground);
   });
 });
 
-describe("correos", () => {
-  it("usan los mismos colores que la web", () => {
+describe("emails", () => {
+  it("use the same colors as the web", () => {
     expect(emailPalette.page).toEqual({
       light: token("muted").light,
       dark: token("background").dark,

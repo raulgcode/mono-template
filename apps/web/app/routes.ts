@@ -3,7 +3,7 @@ import { index, layout, prefix, type RouteConfig, route } from "@react-router/de
 export default [
   index("routes/home.tsx"),
   route("login", "routes/login.tsx"),
-  // Usuario y contraseña: only answer when AUTH_METHODS has "password" (404 otherwise).
+  // Email and password: only answer when AUTH_METHODS has "password" (404 otherwise).
   route("sign-up", "routes/sign-up.tsx"),
   route("forgot-password", "routes/forgot-password.tsx"),
   route("reset-password", "routes/reset-password.tsx"),

@@ -31,10 +31,10 @@ function renderPicker(locale: Locale) {
 
 describe("LanguagePicker", () => {
   it.each([
-    ["es", "Idioma"],
     ["en", "Language"],
+    ["es", "Idioma"],
   ] as const)(
-    "en %s marca el idioma actual y nombra cada uno en sí mismo",
+    "in %s it marks the current language and names each one in itself",
     async (locale, legend) => {
       const screen = await renderPicker(locale).screen;
       const group = screen.getByRole("group", { name: legend });
@@ -42,19 +42,19 @@ describe("LanguagePicker", () => {
         .element(group.getByRole("radio", { checked: true }))
         .toHaveAttribute("value", locale);
       for (const [name, lang] of [
-        ["Español", "es"],
         ["English", "en"],
+        ["Español", "es"],
       ] as const) {
         await expect.element(group.getByText(name, { exact: true })).toHaveAttribute("lang", lang);
       }
     },
   );
 
-  it("guarda el idioma al elegirlo y vuelve a la misma página", async () => {
-    const { screen, saved } = renderPicker("es");
-    await (await screen).getByRole("radio", { name: "English" }).click();
+  it("saves the language when picked and comes back to the same page", async () => {
+    const { screen, saved } = renderPicker("en");
+    await (await screen).getByRole("radio", { name: "Español" }).click();
 
-    await expect.poll(() => saved()?.get("locale")).toBe("en");
+    await expect.poll(() => saved()?.get("locale")).toBe("es");
     expect(saved()?.get("redirectTo")).toBe("/app/acme-x1/settings?tab=1");
   });
 });

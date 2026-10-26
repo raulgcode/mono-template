@@ -35,7 +35,7 @@ interface WorkerFixtures {
   /** The e2e database, one connection per worker: seed data with `@starter/core`, not SQL. */
   db: Database;
   /**
-   * Session of an owner with a workspace ("Mi empresa"), created once per worker through the
+   * Session of an owner with a workspace ("My company"), created once per worker through the
    * real magic link and reused by every `ownerTest` in that worker.
    */
   ownerSession: { storageState: string; slug: string };
@@ -47,8 +47,8 @@ async function signInThroughEmail(
   email = uniqueEmail("owner"),
 ): Promise<string> {
   await page.goto("/login?with=link");
-  await page.getByLabel("Correo electrónico").fill(email);
-  await page.getByRole("button", { name: "Enviarme el enlace" }).click();
+  await page.getByLabel("Email").fill(email);
+  await page.getByRole("button", { name: "Email me the link" }).click();
   await expect(page.getByRole("main").getByRole("status")).toContainText(email);
   await page.goto(await getLinkFromEmail(email, baseURL));
   return email;
@@ -57,8 +57,8 @@ async function signInThroughEmail(
 /** Creates the workspace from the onboarding, landing on its home. */
 export async function createWorkspace(page: Page, name: string): Promise<void> {
   await expect(page).toHaveURL(/\/app\/onboarding$/);
-  await page.getByLabel("Nombre del espacio").fill(name);
-  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.getByLabel("Workspace name").fill(name);
+  await page.getByRole("button", { name: "Continue" }).click();
   await expect(page).toHaveURL(/\/app\/[a-z0-9-]+-[0-9a-f]{6}$/);
 }
 
@@ -72,7 +72,7 @@ async function createOwnerSession(
   const context = await browser.newContext({ baseURL, locale });
   const page = await context.newPage();
   await signInThroughEmail(page, baseURL);
-  await createWorkspace(page, "Mi empresa");
+  await createWorkspace(page, "My company");
   await context.storageState({ path });
   const slug = slugOf(page);
   await context.close();
@@ -128,7 +128,7 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     await use((page, email) => signInThroughEmail(page, baseURL, email));
   },
   signInWithWorkspace: async ({ signIn }, use) => {
-    await use(async (page, workspaceName = "Mi empresa") => {
+    await use(async (page, workspaceName = "My company") => {
       const email = await signIn(page);
       await createWorkspace(page, workspaceName);
       return email;

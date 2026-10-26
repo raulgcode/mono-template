@@ -67,13 +67,13 @@ describe("buildEnvFile", () => {
 });
 
 describe("setEnvValue", () => {
-  it("reemplaza el valor de una clave que ya está", () => {
+  it("replaces the value of an existing key", () => {
     expect(setEnvValue("A=1\nSUPER_ADMIN_EMAILS=\nB=2\n", "SUPER_ADMIN_EMAILS", "yo@x.com")).toBe(
       "A=1\nSUPER_ADMIN_EMAILS=yo@x.com\nB=2\n",
     );
   });
 
-  it("agrega la clave al final si no está", () => {
+  it("appends the key when it is missing", () => {
     expect(setEnvValue("A=1", "SUPER_ADMIN_EMAILS", "yo@x.com")).toBe(
       "A=1\nSUPER_ADMIN_EMAILS=yo@x.com\n",
     );

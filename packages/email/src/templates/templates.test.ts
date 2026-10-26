@@ -7,12 +7,12 @@ import { MagicLinkEmail, magicLinkSubject } from "./magic-link";
 
 const url = "https://app.starter.example/api/auth/verify?token=abc&x=1";
 
-describe("marca en todos los correos", () => {
+describe("brand in every email", () => {
   it.each([
     createElement(MagicLinkEmail, { url }),
     createElement(AccountEmail, { kind: "verify", name: "Ana", url }),
     createElement(AccountEmail, { kind: "reset", name: "Ana", url }),
-  ])("$type.name lleva el color de la marca, modo oscuro y el enlace escrito", async (email) => {
+  ])("$type.name carries the brand color, dark mode and the link spelled out", async (email) => {
     const { html, text } = await renderEmail(email);
     expect(html).toContain(`background-color:${emailPalette.primary.light}`);
     expect(html).toContain("@media (prefers-color-scheme: dark)");
@@ -23,34 +23,34 @@ describe("marca en todos los correos", () => {
   });
 });
 
-describe("correos en el idioma de quien los recibe", () => {
-  it("el enlace para entrar sale en español por defecto", async () => {
+describe("emails in the recipient's language", () => {
+  it("the sign-in link goes out in English by default", async () => {
     const { html, text } = await renderEmail(createElement(MagicLinkEmail, { url }));
-    expect(magicLinkSubject("es")).toBe("Tu enlace para entrar");
-    expect(html).toContain('lang="es"');
-    expect(text).toContain("Entra con un toque");
-  });
-
-  it("y en inglés cuando lo pidieron desde una página en inglés", async () => {
-    const element = createElement(MagicLinkEmail, { url, locale: "en" });
-    const { html, text } = await renderEmail(element);
     expect(magicLinkSubject("en")).toBe("Your sign-in link");
     expect(html).toContain('lang="en"');
     expect(text).toContain("Sign in with one tap");
   });
 
-  it("confirmar el correo saluda por nombre", async () => {
-    const element = createElement(AccountEmail, { kind: "verify", name: "Ana", url });
-    const { text } = await renderEmail(element);
-    expect(accountEmailSubject("verify", "es")).toBe("Confirma tu correo");
-    expect(text).toContain("Hola, Ana");
-    expect(text).toContain("Confirmar correo");
+  it("and in Spanish when asked for from a page in Spanish", async () => {
+    const element = createElement(MagicLinkEmail, { url, locale: "es" });
+    const { html, text } = await renderEmail(element);
+    expect(magicLinkSubject("es")).toBe("Tu enlace para entrar");
+    expect(html).toContain('lang="es"');
+    expect(text).toContain("Entra con un toque");
   });
 
-  it("elegir una contraseña nueva, en inglés", async () => {
-    const element = createElement(AccountEmail, { kind: "reset", name: "Ana", url, locale: "en" });
+  it("confirming the email greets them by name", async () => {
+    const element = createElement(AccountEmail, { kind: "verify", name: "Ana", url });
     const { text } = await renderEmail(element);
-    expect(accountEmailSubject("reset", "en")).toBe("Choose a new password");
-    expect(text).toContain("Choose password");
+    expect(accountEmailSubject("verify", "en")).toBe("Confirm your email");
+    expect(text).toContain("Hi, Ana");
+    expect(text).toContain("Confirm email");
+  });
+
+  it("choosing a new password, in Spanish", async () => {
+    const element = createElement(AccountEmail, { kind: "reset", name: "Ana", url, locale: "es" });
+    const { text } = await renderEmail(element);
+    expect(accountEmailSubject("reset", "es")).toBe("Elige una nueva contraseña");
+    expect(text).toContain("Elegir contraseña");
   });
 });

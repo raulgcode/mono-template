@@ -3,60 +3,59 @@
 <!-- template:start -->
 ## mono-template
 
-Plantilla de monorepo para empezar proyectos con lo de siempre ya resuelto, sacada de Repitoo y
-sin su lógica de negocio:
+A monorepo template to start projects with the usual things already solved, extracted from
+Repitoo without its business logic:
 
-- **Web**: React Router 8 (framework mode) con Tailwind 4, tema claro/oscuro sin parpadeo, presupuesto de Lighthouse,
-  mobile first, español e inglés.
-- **Entrar**: enlace por correo, correo y contraseña (con confirmación y recuperación) y Google,
-  con Better Auth. Eliges cuáles en el setup.
-- **Espacios de trabajo** multi-tenant (`/app/:workspace`) con onboarding y ajustes.
-- **API**: Fastify + Zod con OpenAPI, helmet y tareas programadas.
-- **Datos**: Postgres con Drizzle ORM; correos con MJML (Mailpit en local).
-- **Seguridad**: CSP con nonce, límites de intentos en Postgres, redirects seguros, secretos
-  derivados.
-- **Pruebas**: Vitest (unit, integration y Browser Mode) y Playwright (BDD en celular y
-  escritorio, axe), con los agentes Planner, Generator y Healer.
-- **Para agentes**: `AGENTS.md` con todas las reglas, la skill oficial de React Router, la de
-  Playwright y `nueva-feature`.
-- **Producción**: Docker + Fly.io, CI en GitHub Actions, `pnpm release`.
+- **Web**: React Router 8 (framework mode) with Tailwind 4, light/dark theme without flicker,
+  a Lighthouse budget, mobile first, English and Spanish.
+- **Sign-in**: email link, email and password (with confirmation and recovery) and Google, with
+  Better Auth. You pick which ones during setup.
+- **Multi-tenant workspaces** (`/app/:workspace`) with onboarding and settings.
+- **API**: Fastify + Zod with OpenAPI, helmet and scheduled jobs.
+- **Data**: Postgres with Drizzle ORM; MJML emails (Mailpit locally).
+- **Security**: CSP with a nonce, rate limits in Postgres, safe redirects, derived secrets.
+- **Tests**: Vitest (unit, integration and Browser Mode) and Playwright (BDD on phone and
+  desktop, axe), with the Planner, Generator and Healer agents.
+- **For agents**: `AGENTS.md` with every rule, React Router's official skill, Playwright's and
+  `new-feature`.
+- **Production**: Docker + Fly.io, CI on GitHub Actions, `pnpm release`.
 
-### Empezar un proyecto
+### Start a project
 
-Necesitas Node 22, pnpm (`corepack enable`) y Docker.
+You need Node 22, pnpm (`corepack enable`) and Docker.
 
 ```bash
-gh repo create mi-app --private --template raulgcode/mono-template --clone
-cd mi-app
+gh repo create my-app --private --template raulgcode/mono-template --clone
+cd my-app
 pnpm install
-pnpm start project "Mi App"            # o: pnpm start project "Mi App" --domain miapp.com
+pnpm start project "My App"            # or: pnpm start project "My App" --domain myapp.com
 ```
 
-`pnpm start project` cambia "Starter" por tu nombre en todo el repo (paquetes `@mi-app/*`, base
-de datos, apps de Fly, dominio, textos), instala y corre `pnpm run setup`, que solo te pregunta
-cómo entra la gente (enlace, contraseña, Google) y, con Google, su cliente OAuth. Lo demás es
-automático: `.env` con sus secretos, Postgres y Mailpit en Docker, migraciones, hooks de git y
-Chromium. Esta sección del README se borra sola.
+`pnpm start project` replaces "Starter" with your name across the repo (packages `@my-app/*`,
+database, Fly apps, domain, texts), installs and runs `pnpm run setup`, which only asks how
+people sign in (link, password, Google) and, with Google, its OAuth client. Everything else is
+automatic: `.env` with its secrets, Postgres and Mailpit in Docker, migrations, git hooks and
+Chromium. This README section deletes itself.
 
-Sin GitHub CLI: en GitHub, "Use this template" → "Create a new repository", clónalo y sigue desde
-`pnpm install`.
+Without the GitHub CLI: on GitHub, "Use this template" → "Create a new repository", clone it and
+continue from `pnpm install`.
 <!-- template:end -->
 
-## Empezar
+## Getting started
 
 ```bash
 corepack enable && pnpm install
-pnpm run setup     # .env, secretos, métodos de login, Docker, migraciones, hooks, Chromium
+pnpm run setup     # .env, secrets, sign-in methods, Docker, migrations, hooks, Chromium
 pnpm dev           # web http://localhost:5173 · api http://localhost:3001
 ```
 
-- Entra como cualquier usuario en http://localhost:5173/dev/sign-in (solo en `pnpm dev`).
-- Los correos (enlaces para entrar, confirmaciones) llegan a Mailpit: http://localhost:8025.
-- Cambiar cómo se entra: `pnpm run setup --auth magic-link,password,google`.
+- Sign in as any user at http://localhost:5173/dev/sign-in (only in `pnpm dev`).
+- Emails (sign-in links, confirmations) land in Mailpit: http://localhost:8025.
+- Change how people sign in: `pnpm run setup --auth magic-link,password,google`.
 
-## Cómo se trabaja aquí
+## How we work here
 
-Todo está en [AGENTS.md](AGENTS.md): el mapa del monorepo, las reglas (CLI primero, React Router
-con su skill, formularios con Conform + Zod, mobile first, pruebas, idiomas, seguridad) y los
-comandos. Para una feature nueva, la skill [nueva-feature](.agents/skills/nueva-feature/SKILL.md).
-Producción: [docs/deploy.md](docs/deploy.md).
+Everything is in [AGENTS.md](AGENTS.md): the monorepo map, the rules (CLI first, React Router
+with its skill, forms with Conform + Zod, mobile first, tests, languages, security) and the
+commands. For a new feature, the [new-feature](.agents/skills/new-feature/SKILL.md) skill.
+Production: [docs/deploy.md](docs/deploy.md).

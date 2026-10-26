@@ -1,8 +1,8 @@
 import { createWorkspace, expect, ownerTest, test } from "../support/fixtures";
 import { openSection } from "../support/navigation";
 
-test.describe("Feature: el espacio de trabajo", () => {
-  test("Scenario: quien entra por primera vez crea su espacio y llega a su inicio", async ({
+test.describe("Feature: the workspace", () => {
+  test("Scenario: someone signing in for the first time creates their workspace and lands on its home", async ({
     page,
     signIn,
   }) => {
@@ -11,37 +11,37 @@ test.describe("Feature: el espacio de trabajo", () => {
     });
 
     await test.step("When they name their workspace", async () => {
-      await createWorkspace(page, "Café Luna");
+      await createWorkspace(page, "Moon Café");
     });
 
     await test.step("Then its home greets them in that workspace", async () => {
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Hola, /);
-      await expect(page.getByText("Este es el inicio de Café Luna.")).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Hi, /);
+      await expect(page.getByText("This is the home of Moon Café.")).toBeVisible();
     });
   });
 
-  test("Scenario: un nombre de una letra no crea el espacio y dice por qué", async ({
+  test("Scenario: a one-letter name doesn't create the workspace and says why", async ({
     page,
     signIn,
   }) => {
     await signIn(page);
-    await page.getByLabel("Nombre del espacio").fill("A");
-    await page.getByRole("button", { name: "Continuar" }).click();
-    await expect(page.getByText("El nombre debe tener al menos 2 caracteres")).toBeVisible();
+    await page.getByLabel("Workspace name").fill("A");
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByText("The name needs at least 2 characters")).toBeVisible();
     await expect(page).toHaveURL(/\/app\/onboarding$/);
   });
 
-  ownerTest("Scenario: /app abre el espacio que usó la última vez", async ({ page, workspace }) => {
+  ownerTest("Scenario: /app opens the workspace used last", async ({ page, workspace }) => {
     await page.goto("/app");
     await expect(page).toHaveURL(new RegExp(`/app/${workspace.slug}$`));
   });
 
   ownerTest(
-    "Scenario: el espacio de otra persona responde que no existe",
+    "Scenario: someone else's workspace answers that it doesn't exist",
     async ({ page, newVisitor, signInWithWorkspace }) => {
       const other = await test.step("Given someone else's workspace", async () => {
         const visitor = await newVisitor();
-        await signInWithWorkspace(visitor, "Ajeno");
+        await signInWithWorkspace(visitor, "Theirs");
         return visitor.url();
       });
 
@@ -52,36 +52,39 @@ test.describe("Feature: el espacio de trabajo", () => {
 
       await test.step("Then the page says it was not found", async () => {
         await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-          "No encontramos esta página",
+          "We couldn't find this page",
         );
       });
     },
   );
 
   // Its own account: the language is saved on the account too, and the worker's owner is shared.
-  test("Scenario: cambia el idioma a inglés en Ajustes", async ({ page, signInWithWorkspace }) => {
+  test("Scenario: they switch the language to Spanish in Settings", async ({
+    page,
+    signInWithWorkspace,
+  }) => {
     await test.step("Given an owner on their settings", async () => {
       await signInWithWorkspace(page);
-      await openSection(page, "Ajustes");
+      await openSection(page, "Settings");
     });
 
-    await test.step("When they pick English", async () => {
-      await page.getByRole("radio", { name: "English" }).check();
+    await test.step("When they pick Spanish", async () => {
+      await page.getByRole("radio", { name: "Español" }).check();
     });
 
-    await test.step("Then the app answers in English", async () => {
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Settings");
+    await test.step("Then the app answers in Spanish", async () => {
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ajustes");
     });
   });
 
   // Its own account: signing out ends the session that the worker's `ownerTest`s share.
-  test("Scenario: cierra sesión y /app vuelve a pedir entrar", async ({
+  test("Scenario: they sign out and /app asks them to sign in again", async ({
     page,
     signInWithWorkspace,
   }) => {
     await signInWithWorkspace(page);
-    await openSection(page, "Ajustes");
-    await page.getByRole("button", { name: "Cerrar sesión" }).click();
+    await openSection(page, "Settings");
+    await page.getByRole("button", { name: "Sign out" }).click();
     await expect(page).toHaveURL(/\/$/);
     await page.goto("/app");
     await expect(page).toHaveURL(/\/login\?redirectTo=%2Fapp$/);

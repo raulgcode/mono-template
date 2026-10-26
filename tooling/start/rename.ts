@@ -7,17 +7,17 @@
 export const template = { slug: "starter", display: "Starter", domain: "starter.example" };
 
 export interface ProjectNames {
-  /** Package scope, Fly apps, cookies: `mi-app`. */
+  /** Package scope, Fly apps, cookies: `my-app`. */
   slug: string;
-  /** Postgres user and databases, which take no hyphens: `mi_app`. */
+  /** Postgres user and databases, which take no hyphens: `my_app`. */
   ident: string;
-  /** What people read: `Mi App`. */
+  /** What people read: `My App`. */
   display: string;
-  /** Where it runs in production: `mi-app.com` (app. and api. hang from it). */
+  /** Where it runs in production: `my-app.com` (app. and api. hang from it). */
   domain: string;
 }
 
-/** `Mi App` → slug `mi-app`, ident `mi_app`, display as typed, domain `mi-app.com`. */
+/** `My App` → slug `my-app`, ident `my_app`, display as typed, domain `my-app.com`. */
 export function projectNames(name: string, domain?: string): ProjectNames {
   const display = name.trim().replace(/\s+/g, " ");
   const slug = display
@@ -28,13 +28,13 @@ export function projectNames(name: string, domain?: string): ProjectNames {
     .replace(/^-+|-+$/g, "");
   if (!/^[a-z][a-z0-9-]{1,38}$/.test(slug)) {
     throw new Error(
-      `"${name}" no sirve como nombre: usa de 2 a 39 letras o números y empieza con una letra.`,
+      `"${name}" doesn't work as a name: use 2 to 39 letters or digits, starting with a letter.`,
     );
   }
-  if (slug === template.slug) throw new Error(`El proyecto no puede llamarse "${template.slug}".`);
+  if (slug === template.slug) throw new Error(`The project can't be called "${template.slug}".`);
   const host = (domain ?? `${slug}.com`).trim().toLowerCase();
   if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(host)) {
-    throw new Error(`"${domain}" no es un dominio (por ejemplo mi-app.com).`);
+    throw new Error(`"${domain}" isn't a domain (for example my-app.com).`);
   }
   return { slug, ident: slug.replace(/-/g, "_"), display, domain: host };
 }

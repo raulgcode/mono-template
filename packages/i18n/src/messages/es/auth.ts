@@ -1,3 +1,6 @@
+import type { Translation } from "../../translate";
+import type { en } from "../en";
+
 /** /login, /sign-up, /forgot-password and /reset-password. */
 export const auth = {
   title: "Entrar",
@@ -44,4 +47,4 @@ export const auth = {
   resetInvalid: "El enlace venció o ya se usó. Pide otro.",
   resetDone: "Listo, ya puedes entrar con tu nueva contraseña.",
   backToSignIn: "Volver a entrar",
-} as const;
+} as const satisfies Translation<typeof en>["auth"];

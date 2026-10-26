@@ -52,7 +52,7 @@ describe("planSecrets", () => {
     );
     expect(plan.problems).toEqual([
       expect.stringMatching(/^DATABASE_URL/),
-      expect.stringMatching(/^BETTER_AUTH_SECRET es el mismo/),
+      expect.stringMatching(/^BETTER_AUTH_SECRET is the same/),
       expect.stringMatching(/^SMTP_/),
       expect.stringMatching(/^AUTH_RATE_LIMIT/),
     ]);
@@ -61,9 +61,9 @@ describe("planSecrets", () => {
   it("asks for what production can't run without", () => {
     const { DATABASE_URL, BETTER_AUTH_SECRET, EMAIL_FROM, ...rest } = production;
     expect(planSecrets(rest).problems).toEqual([
-      expect.stringMatching(/^Falta DATABASE_URL/),
-      expect.stringMatching(/^BETTER_AUTH_SECRET falta/),
-      expect.stringMatching(/^Falta EMAIL_FROM/),
+      expect.stringMatching(/^DATABASE_URL is missing/),
+      expect.stringMatching(/^BETTER_AUTH_SECRET is missing/),
+      expect.stringMatching(/^EMAIL_FROM is missing/),
     ]);
   });
 });

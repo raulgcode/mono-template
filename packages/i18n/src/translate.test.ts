@@ -24,7 +24,7 @@ const en = {
 } as const;
 
 describe("createTranslator", () => {
-  it("rellena los placeholders y formatea números según el idioma", () => {
+  it("fills the placeholders and formats numbers for the language", () => {
     expect(createTranslator<typeof es>("es", es)("admin.usersCount", { count: 12345 })).toBe(
       "Cantidad de usuarios: 12.345",
     );
@@ -33,13 +33,13 @@ describe("createTranslator", () => {
     );
   });
 
-  it("devuelve el texto tal cual cuando no lleva placeholders", () => {
+  it("returns the text as is when it has no placeholders", () => {
     const t = createTranslator<typeof es>("en", en);
     expect(t("admin.title")).toBe("Overview");
     expect(t.locale).toBe("en");
   });
 
-  it("elige la forma del plural con el número", () => {
+  it("picks the plural form from the count", () => {
     const t = createTranslator<typeof es>("es", es);
     expect(t("admin.stamps", { count: 1 })).toBe("1 sello");
     expect(t("admin.stamps", { count: 3 })).toBe("3 sellos");
@@ -47,47 +47,47 @@ describe("createTranslator", () => {
     expect(t("admin.rewards", { count: 1, business: "Café" })).toBe("Un premio de Café");
   });
 
-  it("un texto que no está en las secciones cargadas vuelve como la clave", () => {
+  it("a text outside the loaded namespaces comes back as its key", () => {
     expect(createTranslator<typeof es>("es", {})("admin.title")).toBe("admin.title");
   });
 
-  it("exige los valores de cada placeholder", () => {
+  it("requires a value for each placeholder", () => {
     const t = createTranslator<typeof es>("es", es);
     expectTypeOf(t<"admin.greeting">)
       .parameter(1)
       .toEqualTypeOf<{ name: string | number | Date }>();
-    // @ts-expect-error falta `name`
+    // @ts-expect-error `name` is missing
     t("admin.greeting");
-    // @ts-expect-error `total` no existe en el texto
+    // @ts-expect-error `total` is not in the text
     t("admin.usersCount", { total: 3 });
-    // @ts-expect-error un plural siempre necesita `count`
+    // @ts-expect-error a plural always needs `count`
     t("admin.stamps", {});
-    // @ts-expect-error no existe la clave
+    // @ts-expect-error no such key
     t("admin.nope");
   });
 });
 
 describe("interpolate", () => {
-  it("formatea fechas según el idioma", () => {
+  it("formats dates for the language", () => {
     const date = new Date(2026, 9, 22);
     expect(interpolate("es", "Desde {date}", { date })).toBe("Desde 22 oct 2026");
     expect(interpolate("en", "Since {date}", { date })).toBe("Since Oct 22, 2026");
   });
 
-  it("deja a la vista un placeholder sin valor", () => {
+  it("leaves a placeholder without a value in sight", () => {
     expect(interpolate("es", "Hola {name}")).toBe("Hola {name}");
   });
 });
 
 describe("pluralForm", () => {
-  it("usa `other` cuando falta la forma que pide el idioma", () => {
+  it("uses `other` when the form the language asks for is missing", () => {
     // Spanish has a "many" form for millions.
     expect(pluralForm("es", { one: "uno", other: "varios" }, 1_000_000)).toBe("varios");
   });
 });
 
 describe("splitRich", () => {
-  it("cambia cada etiqueta por lo que devuelve su función", () => {
+  it("replaces each tag with what its function returns", () => {
     expect(splitRich(es.admin.terms, { terms: (text) => text.toUpperCase() })).toEqual([
       "Lee los ",
       { tag: "terms", node: "TÉRMINOS" },
@@ -95,7 +95,7 @@ describe("splitRich", () => {
     ]);
   });
 
-  it("una etiqueta sin función queda como texto", () => {
+  it("a tag without a function stays as text", () => {
     expect(splitRich("Hola <b>mundo</b>", {})).toEqual(["Hola ", "mundo"]);
   });
 });

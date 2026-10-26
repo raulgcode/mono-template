@@ -11,8 +11,8 @@ function cspViolations(page: Page): string[] {
   return violations;
 }
 
-test.describe("Feature: la app se protege en el navegador", () => {
-  test("Scenario: la portada y el login llegan con sus cabeceras y sin scripts ajenos", async ({
+test.describe("Feature: the app protects itself in the browser", () => {
+  test("Scenario: the home page and the login come with their headers and no foreign scripts", async ({
     page,
   }) => {
     const violations = cspViolations(page);
@@ -30,14 +30,14 @@ test.describe("Feature: la app se protege en el navegador", () => {
     }
 
     await test.step("Then the page works (it hydrated) and broke no rule", async () => {
-      await page.getByLabel("Correo electrónico").fill("no-es-correo");
-      await page.getByRole("button", { name: "Entrar", exact: true }).click();
-      await expect(page.getByText("Escribe un correo válido")).toBeVisible();
+      await page.getByLabel("Email").fill("not-an-email");
+      await page.getByRole("button", { name: "Sign in", exact: true }).click();
+      await expect(page.getByText("Enter a valid email")).toBeVisible();
       expect(violations).toEqual([]);
     });
   });
 
-  test("Scenario: un redirect que intenta salir del sitio se queda en casa", async ({ page }) => {
+  test("Scenario: a redirect that tries to leave the site stays home", async ({ page }) => {
     const response = await page.request.post("/theme", {
       form: { theme: "dark", redirectTo: "/\\evil.example" },
       maxRedirects: 0,
@@ -46,19 +46,19 @@ test.describe("Feature: la app se protege en el navegador", () => {
     expect(response.headers().location).toBe("/");
   });
 
-  test("Scenario: /dev/sign-in no existe en el build de producción", async ({ page }) => {
+  test("Scenario: /dev/sign-in doesn't exist in the production build", async ({ page }) => {
     const response = await page.goto("/dev/sign-in");
     expect(response?.status()).toBe(404);
   });
 
   ownerTest(
-    "Scenario: el espacio se carga sin violar la política de contenido",
+    "Scenario: the workspace loads without breaking the content policy",
     async ({ page, workspace }) => {
       const violations = cspViolations(page);
 
       await test.step("When the owner opens the workspace and moves around", async () => {
         await page.goto(`/app/${workspace.slug}`);
-        await openSection(page, "Ajustes");
+        await openSection(page, "Settings");
       });
 
       await test.step("Then nothing was blocked", async () => {

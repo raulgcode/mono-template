@@ -46,10 +46,10 @@ export function nextVersion(tags: string[], bumpOrVersion: string): string {
   }
   const exact = parseVersion(bumpOrVersion);
   if (!exact) {
-    throw new Error(`Usa patch, minor, major o una versión como 1.2.3 (recibí "${bumpOrVersion}")`);
+    throw new Error(`Use patch, minor, major or a version like 1.2.3 (got "${bumpOrVersion}")`);
   }
   if (compare(exact, latest) <= 0) {
-    throw new Error(`${format(exact)} no es mayor que la última versión, ${format(latest)}`);
+    throw new Error(`${format(exact)} is not greater than the latest version, ${format(latest)}`);
   }
   return format(exact);
 }

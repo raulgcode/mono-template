@@ -35,34 +35,38 @@ export function planSecrets(
   for (const [key, raw] of Object.entries(env)) {
     const value = raw.trim();
     if (setInFlyToml.includes(key))
-      skipped.push({ key, reason: "va en fly.web.toml y fly.api.toml" });
-    else if (localOnly.includes(key)) skipped.push({ key, reason: "solo en tu máquina" });
-    else if (value === "") skipped.push({ key, reason: "vacía" });
+      skipped.push({ key, reason: "set in fly.web.toml and fly.api.toml" });
+    else if (localOnly.includes(key)) skipped.push({ key, reason: "only on your machine" });
+    else if (value === "") skipped.push({ key, reason: "empty" });
     else secrets[key] = value;
   }
 
   const database = secrets.DATABASE_URL;
-  if (!database) problems.push("Falta DATABASE_URL: la URL directa de Fly Managed Postgres");
+  if (!database) problems.push("DATABASE_URL is missing: the direct URL of Fly Managed Postgres");
   else if (isLocalHost(database)) {
-    problems.push("DATABASE_URL apunta a tu máquina: pon la URL directa de Fly Managed Postgres");
+    problems.push(
+      "DATABASE_URL points at your machine: use the direct URL of Fly Managed Postgres",
+    );
   }
 
   const authSecret = secrets.BETTER_AUTH_SECRET ?? "";
   if (authSecret.length < 32 || authSecret.startsWith("change-me")) {
-    problems.push("BETTER_AUTH_SECRET falta o es corto: genera uno con openssl rand -base64 32");
+    problems.push(
+      "BETTER_AUTH_SECRET is missing or short: generate one with openssl rand -base64 32",
+    );
   } else if (authSecret === options.localAuthSecret) {
-    problems.push("BETTER_AUTH_SECRET es el mismo de tu .env de desarrollo: genera uno nuevo");
+    problems.push("BETTER_AUTH_SECRET is the same as in your development .env: generate a new one");
   }
 
   const smtp = secrets.SMTP_HOST;
   if (!smtp || smtp === "localhost" || smtp === "127.0.0.1" || secrets.SMTP_PORT === "1025") {
-    problems.push("SMTP_* es el Mailpit local: pon el servidor de correo de producción");
+    problems.push("SMTP_* is the local Mailpit: use the production mail server");
   }
   if (!secrets.EMAIL_FROM)
-    problems.push("Falta EMAIL_FROM (por ejemplo Starter <support@starter.example>)");
+    problems.push("EMAIL_FROM is missing (e.g. Starter <support@starter.example>)");
 
   if (secrets.AUTH_RATE_LIMIT === "off") {
-    problems.push("AUTH_RATE_LIMIT=off es solo para los e2e: quítalo");
+    problems.push("AUTH_RATE_LIMIT=off is only for the e2e tests: remove it");
   }
 
   return { secrets, skipped, problems };

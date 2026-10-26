@@ -1,5 +1,5 @@
 /**
- * Starts a project from this template: `pnpm start project "Mi App" [--domain mi-app.com]`.
+ * Starts a project from this template: `pnpm start project "My App" [--domain my-app.com]`.
  *
  * Renames everything that says "Starter" (packages `@starter/*`, the app's name, the database,
  * the Fly apps, the domain), installs with pnpm and runs `pnpm run setup`. Runs once: it removes
@@ -20,7 +20,7 @@ function fail(message: string): never {
 
 function run(command: string, args: string[]): void {
   const result = spawnSync(command, args, { cwd: root, stdio: "inherit" });
-  if (result.status !== 0) fail(`Falló: ${command} ${args.join(" ")}`);
+  if (result.status !== 0) fail(`Failed: ${command} ${args.join(" ")}`);
 }
 
 /** Files in git and new ones it doesn't ignore; `.env` too, so a local setup keeps working. */
@@ -49,7 +49,7 @@ const { values, positionals } = parseArgs({
 });
 const [command, ...nameParts] = positionals;
 if (command !== "project" || nameParts.length === 0) {
-  fail('Uso: pnpm start project "Nombre del proyecto" [--domain mi-proyecto.com]');
+  fail('Usage: pnpm start project "Project name" [--domain my-project.com]');
 }
 
 const rootPackage = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
@@ -57,7 +57,7 @@ const rootPackage = JSON.parse(readFileSync(join(root, "package.json"), "utf8"))
   scripts: Record<string, string>;
 };
 if (rootPackage.name !== template.slug) {
-  fail(`Este proyecto ya se llama "${rootPackage.name}": pnpm start project solo corre una vez.`);
+  fail(`This project is already called "${rootPackage.name}": pnpm start project only runs once.`);
 }
 
 let names: ReturnType<typeof projectNames>;
@@ -68,9 +68,7 @@ try {
 }
 
 console.log(`\n▸ ${names.display}`);
-console.log(
-  `  paquetes @${names.slug}/* · base de datos ${names.ident} · https://app.${names.domain}`,
-);
+console.log(`  packages @${names.slug}/* · database ${names.ident} · https://app.${names.domain}`);
 
 let changed = 0;
 for (const file of projectFiles()) {
@@ -86,7 +84,7 @@ for (const file of projectFiles()) {
     changed++;
   }
 }
-console.log(`  ✓ ${changed} archivos renombrados`);
+console.log(`  ✓ ${changed} files renamed`);
 
 // The template's own tool goes away with the template.
 const renamedPackage = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
@@ -104,8 +102,8 @@ run("pnpm", ["exec", "biome", "check", "--write", "."]);
 run("pnpm", ["run", "setup"]);
 
 console.log(`
-✓ ${names.display} está listo. Lo que sigue:
+✓ ${names.display} is ready. What comes next:
   git add -A && git commit -m "Start ${names.display}"
-  Cambia los colores de la marca en apps/web/app/app.css (brand.test.ts revisa el contraste)
-  y escribe tu primera feature siguiendo AGENTS.md.
+  Change the brand colors in apps/web/app/app.css (brand.test.ts checks the contrast)
+  and write your first feature following AGENTS.md.
 `);

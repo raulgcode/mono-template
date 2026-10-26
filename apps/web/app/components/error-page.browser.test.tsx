@@ -12,7 +12,7 @@ function Page({ status }: { status?: number }) {
 
 async function renderError(
   url: string,
-  { status, locale = "es" }: { status?: number; locale?: Locale } = {},
+  { status, locale = "en" }: { status?: number; locale?: Locale } = {},
 ) {
   const Stub = createRoutesStub([
     {
@@ -28,40 +28,38 @@ async function renderError(
 
 describe("ErrorPage", () => {
   it("tells the person the page doesn't exist and takes them home", async () => {
-    const screen = await renderError("/app/otro-espacio", { status: 404 });
+    const screen = await renderError("/app/other-workspace", { status: 404 });
     await expect
       .element(screen.getByRole("heading", { level: 1 }))
-      .toHaveTextContent("No encontramos esta página");
+      .toHaveTextContent("We couldn't find this page");
     await expect.element(screen.getByText("Error 404")).toBeVisible();
     await expect
-      .element(screen.getByRole("link", { name: "Ir al inicio" }))
+      .element(screen.getByRole("link", { name: "Go home" }))
       .toHaveAttribute("href", "/");
-    await expect
-      .element(screen.getByRole("link", { name: "Intentar de nuevo" }))
-      .not.toBeInTheDocument();
+    await expect.element(screen.getByRole("link", { name: "Try again" })).not.toBeInTheDocument();
   });
 
   it("offers to retry the same page after an unexpected error", async () => {
     const screen = await renderError("/login?redirectTo=%2Fapp");
     await expect
       .element(screen.getByRole("heading", { level: 1 }))
-      .toHaveTextContent("Ups, algo salió mal");
+      .toHaveTextContent("Oops, something went wrong");
     await expect
-      .element(screen.getByText("No fue tu culpa. Vuelve a intentarlo en un momento."))
+      .element(screen.getByText("It wasn't your fault. Try again in a moment."))
       .toBeVisible();
     await expect
-      .element(screen.getByRole("link", { name: "Intentar de nuevo" }))
+      .element(screen.getByRole("link", { name: "Try again" }))
       .toHaveAttribute("href", "/login?redirectTo=%2Fapp");
     await expect
-      .element(screen.getByRole("link", { name: "Ir al inicio" }))
+      .element(screen.getByRole("link", { name: "Go home" }))
       .toHaveAttribute("href", "/");
   });
 
   it("speaks the page's language", async () => {
-    const en = await renderError("/app", { locale: "en" });
+    const es = await renderError("/app", { locale: "es" });
     await expect
-      .element(en.getByRole("heading", { level: 1 }))
-      .toHaveTextContent("Oops, something went wrong");
-    await expect.element(en.getByRole("link", { name: "Try again" })).toBeVisible();
+      .element(es.getByRole("heading", { level: 1 }))
+      .toHaveTextContent("Ups, algo salió mal");
+    await expect.element(es.getByRole("link", { name: "Intentar de nuevo" })).toBeVisible();
   });
 });

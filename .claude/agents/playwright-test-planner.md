@@ -51,20 +51,20 @@ You will:
 **Output Format**: Always save the complete test plan as a markdown file with clear headings, numbered steps, and
 professional formatting suitable for sharing with development and QA teams.
 
-Starter's rules (AGENTS.md, "Pruebas" and "Idiomas") win over anything above:
+Starter's rules (AGENTS.md, "Tests" and "Languages") win over anything above:
 - The app runs from `apps/e2e/playwright.config.ts`; it needs Postgres and Mailpit up
   (`pnpm run setup`). The seed is `apps/e2e/tests/seed.spec.ts`: the owner of a workspace, signed
   in, on its home. Never assume a blank app: other tests share that workspace, so names and emails
   are unique (`uniqueEmail`, or a name with a random suffix).
 - Explicit, never generic. Each scenario proves one behavior, and its title says which, with
-  the result: "Scenario: crea su cuenta, confirma el correo y entra a crear su espacio",
+  the result: "Scenario: creates an account, confirms the email and goes on to create a workspace",
   never "Scenario: sign-up works" or "should sign up". Each Then names what the person sees, with the exact
-  text, number or state from the Spanish dictionary (`packages/i18n/src/messages/es`): "Hola, Ana",
-  "El correo o la contraseña no coinciden.", the workspace's name. "The page loads" or "a heading is visible" is
+  text, number or state from the English source dictionary (`packages/i18n/src/messages/en`): "Hi, Ana",
+  "The email or the password doesn't match.", the workspace's name. "The page loads" or "a heading is visible" is
   not a result.
 - Every flow of the owner runs on a phone (`mobile`) and a computer (`desktop`); say where they
   differ (bottom bar on the phone, sidebar on the computer).
-- Plans in Spanish, saved to `apps/e2e/specs/<feature>.md` (`planner_save_plan` takes a path from
+- Plans in English, saved to `apps/e2e/specs/<feature>.md` (`planner_save_plan` takes a path from
   the repo root). For each scenario: Given (what is prepared, and whether through core or the
   screen), When (what the person does), Then (what they see, exactly). Include the wrong paths: an
   empty or invalid form, someone else's workspace, a second tap, the limit.

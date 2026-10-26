@@ -5,9 +5,6 @@ import { expect, type Page } from "@playwright/test";
  * menu on the desktop. Both are the same `nav`, so one locator serves both.
  */
 export async function openSection(page: Page, name: string): Promise<void> {
-  await page
-    .getByRole("navigation", { name: "Menú principal" })
-    .getByRole("link", { name })
-    .click();
+  await page.getByRole("navigation", { name: "Main menu" }).getByRole("link", { name }).click();
   await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
 }

@@ -1,3 +1,6 @@
+import type { Translation } from "../../translate";
+import type { en } from "../en";
+
 /** The emails (`@starter/email`): each one goes in the recipient's language. */
 export const email = {
   footer: "Recibiste este correo porque alguien lo pidió con esta dirección en Starter.",
@@ -17,4 +20,4 @@ export const email = {
   resetBody: "Toca el botón para elegir una nueva contraseña. El enlace sirve una hora.",
   resetButton: "Elegir contraseña",
   resetIgnore: "Si no lo pediste, ignora este correo: tu contraseña no cambia.",
-} as const;
+} as const satisfies Translation<typeof en>["email"];

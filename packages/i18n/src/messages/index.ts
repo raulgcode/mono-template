@@ -5,8 +5,8 @@ import type { MessageKey, Translation } from "../translate";
 import { en } from "./en";
 import { es } from "./es";
 
-export type Messages = typeof es;
+export type Messages = typeof en;
 export type Namespace = keyof Messages;
 export type Key = MessageKey<Messages>;
 
-export const dictionaries: Record<Locale, Translation<Messages>> = { es, en };
+export const dictionaries: Record<Locale, Translation<Messages>> = { en, es };

@@ -3,7 +3,7 @@ import { GoogleIcon } from "~/components/google-icon";
 import { Button } from "~/components/ui/button";
 import { useT } from "~/lib/i18n";
 
-/** "Continuar con Google": a native POST, so the OAuth state cookie and the redirect work without JS. */
+/** "Continue with Google": a native POST, so the OAuth state cookie and the redirect work without JS. */
 export function GoogleButton() {
   const t = useT();
   return (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { locales } from "../locale";
+import { defaultLocale, locales } from "../locale";
 import type { Message } from "../translate";
 import { dictionaries } from ".";
 
@@ -12,13 +12,13 @@ const tags = (message: Message) => {
   return [...new Set(texts.flatMap((text) => text?.match(/<\/?\w+>/g) ?? []))].sort();
 };
 
-const source = dictionaries.es;
-const others = locales.filter((locale) => locale !== "es");
+const source = dictionaries[defaultLocale];
+const others = locales.filter((locale) => locale !== defaultLocale);
 
-describe.each(others)("diccionario %s", (locale) => {
+describe.each(others)("%s dictionary", (locale) => {
   const dictionary = dictionaries[locale];
 
-  it("tiene las mismas secciones y claves que el español", () => {
+  it("has the same namespaces and keys as the English source", () => {
     expect(Object.keys(dictionary).sort()).toEqual(Object.keys(source).sort());
     for (const [namespace, messages] of Object.entries(source)) {
       const translated = dictionary[namespace as keyof typeof dictionary];
@@ -26,7 +26,7 @@ describe.each(others)("diccionario %s", (locale) => {
     }
   });
 
-  it("usa los mismos placeholders y etiquetas en cada texto", () => {
+  it("uses the same placeholders and tags in every text", () => {
     for (const [namespace, messages] of Object.entries(source)) {
       const translated: Record<string, Message> = dictionary[namespace as keyof typeof dictionary];
       for (const [key, message] of Object.entries(messages as Record<string, Message>)) {
@@ -39,7 +39,7 @@ describe.each(others)("diccionario %s", (locale) => {
     }
   });
 
-  it("no deja textos vacíos", () => {
+  it("leaves no text empty", () => {
     for (const [namespace, messages] of Object.entries(dictionary)) {
       for (const [key, message] of Object.entries(messages as Record<string, Message>)) {
         const texts = typeof message === "string" ? [message] : Object.values(message);

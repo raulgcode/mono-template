@@ -58,30 +58,30 @@ application behavior.
    ```
    </example-generation>
 
-Starter's rules (AGENTS.md, "Pruebas" and "Idiomas") win over anything above:
+Starter's rules (AGENTS.md, "Tests" and "Languages") win over anything above:
 - The app runs from `apps/e2e/playwright.config.ts`; it needs Postgres and Mailpit up
   (`pnpm run setup`). The seed is `apps/e2e/tests/seed.spec.ts`: the owner of a workspace, signed
   in, on its home. Never assume a blank app: other tests share that workspace, so names and emails
   are unique (`uniqueEmail`, or a name with a random suffix).
 - Explicit, never generic. Each scenario proves one behavior, and its title says which, with
-  the result: "Scenario: crea su cuenta, confirma el correo y entra a crear su espacio",
+  the result: "Scenario: creates an account, confirms the email and goes on to create a workspace",
   never "Scenario: sign-up works" or "should sign up". Each Then names what the person sees, with the exact
-  text, number or state from the Spanish dictionary (`packages/i18n/src/messages/es`): "Hola, Ana",
-  "El correo o la contraseña no coinciden.", the workspace's name. "The page loads" or "a heading is visible" is
+  text, number or state from the English source dictionary (`packages/i18n/src/messages/en`): "Hi, Ana",
+  "The email or the password doesn't match.", the workspace's name. "The page loads" or "a heading is visible" is
   not a result.
 - Every flow of the owner runs on a phone (`mobile`) and a computer (`desktop`); say where they
   differ (bottom bar on the phone, sidebar on the computer).
 - Write the spec the way `apps/e2e/tests` does, not the way the log above suggests:
   `test.describe("Feature: …")`, `ownerTest("Scenario: …")` (or `test` + `signIn` for sign-in and
   onboarding), and every step in `await test.step("Given …" | "When …" | "Then …" | "And …")`,
-  in English, the scenario titles in Spanish. One file per feature, `apps/e2e/tests/<feature>.spec.ts`;
+  all in English. One file per feature, `apps/e2e/tests/<feature>.spec.ts`;
   add to it if it exists.
 - Use the repo's pieces (`apps/e2e/support`): `workspace.tenant` and core's use cases to prepare data,
   `workspaceOf(page)`, `newVisitor()` for another browser, `openSection` to move around,
   `createWorkspace` and the page objects in `support/` for preparation, and `expectAccessible(page)` on each new screen. Never a database
   connection or `browser.newContext` of your own. What the scenario is about stays written in the
   spec, not hidden in a helper.
-- Locators by role, label or text, in Spanish. No CSS or XPath, `waitForTimeout`, `force: true`,
+- Locators by role, label or text, in English (the source language). No CSS or XPath, `waitForTimeout`, `force: true`,
   `networkidle` or `.only` (`pnpm lint` rejects them). Each Then uses web-first assertions on the
   exact value: `toHaveText`, `toContainText`, `toHaveValue`, `toHaveURL`, not only `toBeVisible`.
 - Run what you wrote on both projects (`test_run`) before you finish, and run `pnpm lint` and

@@ -1,3 +1,5 @@
+import type { Translation } from "../../translate";
+import type { en } from "../en";
 import { auth } from "./auth";
 import { common } from "./common";
 import { email } from "./email";
@@ -6,7 +8,6 @@ import { home } from "./home";
 import { settings } from "./settings";
 import { workspace } from "./workspace";
 
-/** The source language. A new namespace is added here and in `en/index.ts`. */
 export const es = {
   auth,
   common,
@@ -15,4 +16,4 @@ export const es = {
   home,
   settings,
   workspace,
-} as const;
+} as const satisfies Translation<typeof en>;

@@ -11,18 +11,18 @@ function renderWithSlowPage() {
       Component: () => (
         <>
           <NavigationProgress />
-          <Link to="/lenta">Ir</Link>
+          <Link to="/slow">Go</Link>
           <Outlet />
         </>
       ),
       children: [
         {
-          path: "lenta",
+          path: "slow",
           loader: () =>
             new Promise<null>((resolve) => {
               finish = () => resolve(null);
             }),
-          Component: () => <h1>Página lenta</h1>,
+          Component: () => <h1>Slow page</h1>,
         },
       ],
     },
@@ -31,22 +31,22 @@ function renderWithSlowPage() {
 }
 
 describe("NavigationProgress", () => {
-  it("en reposo no muestra barra ni anuncia nada", async () => {
+  it("at rest it shows no bar and announces nothing", async () => {
     const screen = await renderWithSlowPage().screen;
     await expect.element(screen.getByRole("status")).toHaveTextContent("");
     expect(document.querySelector(".navigation-progress-bar")).toBeNull();
   });
 
-  it("mientras carga la página muestra la barra y anuncia 'Cargando…'", async () => {
+  it("while the page loads it shows the bar and announces 'Loading…'", async () => {
     const { screen, finish } = renderWithSlowPage();
     const view = await screen;
-    await view.getByRole("link", { name: "Ir" }).click();
+    await view.getByRole("link", { name: "Go" }).click();
 
-    await expect.element(view.getByRole("status")).toHaveTextContent("Cargando…");
+    await expect.element(view.getByRole("status")).toHaveTextContent("Loading…");
     expect(document.querySelector('[data-navigation-progress="loading"]')).not.toBeNull();
 
     finish();
-    await expect.element(view.getByRole("heading", { name: "Página lenta" })).toBeVisible();
+    await expect.element(view.getByRole("heading", { name: "Slow page" })).toBeVisible();
     await expect.element(view.getByRole("status")).toHaveTextContent("");
     expect(document.querySelector(".navigation-progress-bar")).toBeNull();
   });

@@ -2,19 +2,19 @@ import { describe, expect, it } from "vitest";
 import { parseAuthChoice } from "./auth-choice";
 
 describe("parseAuthChoice", () => {
-  it("acepta los números de la lista", () => {
+  it("takes the numbers of the list", () => {
     expect(parseAuthChoice("3, 1", ["magic-link"])).toEqual(["magic-link", "google"]);
   });
 
-  it("acepta los nombres", () => {
+  it("takes the names", () => {
     expect(parseAuthChoice("google password", ["magic-link"])).toEqual(["password", "google"]);
   });
 
-  it("con Enter deja lo que había", () => {
+  it("Enter keeps what was there", () => {
     expect(parseAuthChoice("  ", ["password"])).toEqual(["password"]);
   });
 
-  it("no repite un método escrito dos veces", () => {
+  it("doesn't repeat a method typed twice", () => {
     expect(parseAuthChoice("1,1,magic-link", [])).toEqual(["magic-link"]);
   });
 

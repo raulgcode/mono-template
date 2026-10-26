@@ -6,20 +6,20 @@ const publicPages = ["/", "/login", "/login?with=link", "/sign-up", "/forgot-pas
 // Sections inside the workspace, after /app/:workspace. A new section goes here.
 const workspaceSections = ["", "/settings"];
 
-test.describe("Feature: accesibilidad (axe, WCAG 2.2 AA)", () => {
+test.describe("Feature: accessibility (axe, WCAG 2.2 AA)", () => {
   for (const colorScheme of schemes) {
-    test.describe(`tema ${colorScheme === "light" ? "claro" : "oscuro"}`, () => {
+    test.describe(`${colorScheme} theme`, () => {
       test.use({ colorScheme });
 
       for (const path of publicPages) {
-        test(`Scenario: ${path} no tiene violaciones`, async ({ page, expectAccessible }) => {
+        test(`Scenario: ${path} has no violations`, async ({ page, expectAccessible }) => {
           await page.goto(path);
           await expectAccessible(page);
         });
       }
 
       ownerTest(
-        "Scenario: las secciones del espacio no tienen violaciones",
+        "Scenario: the workspace sections have no violations",
         async ({ page, workspace, expectAccessible }) => {
           for (const section of workspaceSections) {
             await page.goto(`/app/${workspace.slug}${section}`);
@@ -30,13 +30,13 @@ test.describe("Feature: accesibilidad (axe, WCAG 2.2 AA)", () => {
     });
   }
 
-  test("Scenario: los errores de un formulario tampoco tienen violaciones", async ({
+  test("Scenario: a form's errors have no violations either", async ({
     page,
     expectAccessible,
   }) => {
     await page.goto("/sign-up");
-    await page.getByRole("button", { name: "Crear cuenta" }).click();
-    await expect(page.getByText("Escribe tu nombre")).toBeVisible();
+    await page.getByRole("button", { name: "Create account" }).click();
+    await expect(page.getByText("Enter your name")).toBeVisible();
     await expectAccessible(page);
   });
 });

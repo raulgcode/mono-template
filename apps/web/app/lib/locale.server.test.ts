@@ -24,8 +24,8 @@ async function run(headers: HeadersInit = {}) {
   return { context, request, response: response as Response };
 }
 
-describe("cookie del idioma", () => {
-  it("lee el idioma que se guardó y dura un año", async () => {
+describe("language cookie", () => {
+  it("reads the saved language and lasts a year", async () => {
     const setCookie = await localeCookieHeader("en");
     expect(setCookie).toMatch(/Max-Age=31536000/);
     expect(setCookie).toMatch(/SameSite=Lax/);
@@ -33,14 +33,14 @@ describe("cookie del idioma", () => {
     await expect(readLocaleCookie(request)).resolves.toBe("en");
   });
 
-  it("ignora un valor que no es un idioma", async () => {
+  it("ignores a value that isn't a language", async () => {
     const request = new Request("http://localhost/", { headers: { Cookie: "lang=ImRlIg==" } });
     await expect(readLocaleCookie(request)).resolves.toBeUndefined();
   });
 });
 
 describe("localeMiddleware", () => {
-  it("usa la cookie antes que el navegador", async () => {
+  it("uses the cookie before the browser", async () => {
     const { context } = await run({
       Cookie: await cookieOf("es"),
       "Accept-Language": "en-US,en;q=0.9",
@@ -48,32 +48,32 @@ describe("localeMiddleware", () => {
     expect(context.get(localeContext)).toBe("es");
   });
 
-  it("sin cookie, el idioma del navegador; si no lo tenemos, inglés", async () => {
+  it("without a cookie, the browser's language; English if we don't have it", async () => {
     expect((await run({ "Accept-Language": "en-GB" })).context.get(localeContext)).toBe("en");
     expect((await run({ "Accept-Language": "es-MX" })).context.get(localeContext)).toBe("es");
     expect((await run({ "Accept-Language": "de" })).context.get(localeContext)).toBe("en");
   });
 
-  it("avisa a los cachés que la respuesta cambia con el idioma", async () => {
+  it("tells caches the response varies with the language", async () => {
     const { response } = await run();
     expect(response.headers.get("Vary")).toBe("Accept-Language, Cookie");
   });
 });
 
 describe("applyAccountLocale", () => {
-  it("en un dispositivo sin cookie usa el idioma de la cuenta", async () => {
+  it("on a device without a cookie it uses the account's language", async () => {
     const { context, request } = await run({ "Accept-Language": "es" });
     await applyAccountLocale(request, context, { locale: "en" });
     expect(context.get(localeContext)).toBe("en");
   });
 
-  it("la cookie de este dispositivo gana sobre la cuenta", async () => {
+  it("this device's cookie wins over the account", async () => {
     const { context, request } = await run({ Cookie: await cookieOf("es") });
     await applyAccountLocale(request, context, { locale: "en" });
     expect(context.get(localeContext)).toBe("es");
   });
 
-  it("sin idioma en la cuenta no cambia nada", async () => {
+  it("without a language in the account nothing changes", async () => {
     const { context, request } = await run({ "Accept-Language": "en" });
     await applyAccountLocale(request, context, { locale: null });
     expect(context.get(localeContext)).toBe("en");
@@ -81,7 +81,7 @@ describe("applyAccountLocale", () => {
 });
 
 describe("translations", () => {
-  it("manda solo las secciones pedidas, en el idioma de la página", async () => {
+  it("sends only the namespaces asked for, in the page's language", async () => {
     const { context } = await run({ "Accept-Language": "en" });
     const sent = translations(context, "common");
     expect(Object.keys(sent)).toEqual(["common"]);

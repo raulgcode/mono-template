@@ -1,17 +1,18 @@
-# Planes de prueba
+# Test plans
 
-Los planes que escribe el agente Planner (`.claude/agents/playwright-test-planner.md`), uno por
-feature: `apps/e2e/specs/<feature>.md`. El Generator los convierte en specs de `apps/e2e/tests`,
-que se revisan como cualquier otro código. Un plan es un borrador para decidir qué probar; la prueba
-que vale es la del spec.
+The plans the Planner agent writes (`.claude/agents/playwright-test-planner.md`), one per
+feature: `apps/e2e/specs/<feature>.md`. The Generator turns them into specs in `apps/e2e/tests`,
+which are reviewed like any other code. A plan is a draft to decide what to test; the test that
+counts is the spec.
 
-## Pendiente: ¿Generator, a mano o híbrido?
+## Pending: Generator, by hand or hybrid?
 
-En la próxima feature con flujo nuevo, su suite se hace de tres maneras y se comparan antes de
-decidir cuál se usa de ahí en adelante:
-1. **A mano**, con las convenciones de `AGENTS.md`.
-2. **Planner + Generator**, tal como los entregan.
-3. **Híbrido**: el Planner propone los escenarios, se revisan y se escriben a mano.
+On the next feature with a new flow, its suite is written three ways and compared before deciding
+which one to use from then on:
+1. **By hand**, with the conventions in `AGENTS.md`.
+2. **Planner + Generator**, as they come.
+3. **Hybrid**: the Planner proposes the scenarios, they are reviewed and written by hand.
 
-Se mide el tiempo, cuánto hubo que corregir, si pasan en `desktop` y `mobile` y qué tan explícito es
-cada escenario (qué comportamiento prueba y con qué texto o número exacto lo verifica).
+Measure the time, how much had to be fixed, whether they pass on `desktop` and `mobile` and how
+explicit each scenario is (which behavior it proves and with what exact text or number it checks
+it).

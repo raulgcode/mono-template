@@ -17,8 +17,8 @@ export default defineConfig({
   globalSetup: "./support/global-setup.ts",
   use: {
     baseURL,
-    // The source language: scenarios find things by their Spanish texts.
-    locale: "es-MX",
+    // The source language: scenarios find things by their English texts.
+    locale: "en-US",
     trace: "retain-on-failure",
     launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE },
   },
@@ -42,7 +42,7 @@ export default defineConfig({
       AUTH_RATE_LIMIT: "off",
       // Every way to sign in is on, whatever this project picked: the template tests them all.
       AUTH_METHODS: "magic-link,password,google",
-      // Fake credentials: enough to render "Continuar con Google" and build the redirect.
+      // Fake credentials: enough to render "Continue with Google" and build the redirect.
       GOOGLE_CLIENT_ID: "e2e.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "e2e-secret",
     },

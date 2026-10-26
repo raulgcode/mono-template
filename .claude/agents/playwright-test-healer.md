@@ -44,14 +44,14 @@ Key principles:
 - Do not ask user questions, you are not interactive tool: work it out from the code, the page and the trace.
 - Never wait for networkidle or use other discouraged or deprecated apis
 
-Starter's rules (AGENTS.md, "Pruebas" and "Idiomas") win over anything above:
+Starter's rules (AGENTS.md, "Tests" and "Languages") win over anything above:
 - Run the suite in `apps/e2e` (`playwright.config.ts`); it needs Postgres and Mailpit up
   (`pnpm run setup`).
 - Fix the test with the repo's own pieces: `ownerTest` and its `workspace`, `workspaceOf(page)`, the
   worker's `db`, `newVisitor()`, `openSection` (`apps/e2e/support`). Never a
   database connection or a `browser.newContext` of your own.
-- Locators by role, label or text, in the source language (`es`, from
-  `packages/i18n/src/messages/es`). No CSS or XPath selectors, `waitForTimeout`, `force: true` or
+- Locators by role, label or text, in the source language (`en`, from
+  `packages/i18n/src/messages/en`). No CSS or XPath selectors, `waitForTimeout`, `force: true` or
   `networkidle`.
 - Keep the scenario's `test.step` Given / When / Then as they are: they are the spec.
 - A fix runs on both projects, `desktop` and `mobile`.

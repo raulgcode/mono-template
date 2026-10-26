@@ -1,18 +1,17 @@
-# Producción en Fly.io
+# Production on Fly.io
 
-Starter corre en Fly.io como dos apps hechas de la misma imagen (`Dockerfile`), más la base de
-datos:
+Starter runs on Fly.io as two apps built from the same image (`Dockerfile`), plus the database:
 
-| Qué                  | Dónde                                                   | Config         |
-| -------------------- | ------------------------------------------------------- | -------------- |
-| `starter-web`        | `app.starter.example`: páginas, login, el espacio       | `fly.web.toml` |
-| `starter-api`        | `api.starter.example`: API pública y tareas programadas | `fly.api.toml` |
-| Fly Managed Postgres | `starter-db`, misma región que las apps (`iad`)         | —              |
+| What                 | Where                                                | Config         |
+| -------------------- | ---------------------------------------------------- | -------------- |
+| `starter-web`        | `app.starter.example`: pages, sign-in, the workspace | `fly.web.toml` |
+| `starter-api`        | `api.starter.example`: public API and scheduled jobs | `fly.api.toml` |
+| Fly Managed Postgres | `starter-db`, same region as the apps (`iad`)        | —              |
 
-Las URLs públicas (`APP_URL`, `API_URL`) y `CLIENT_IP_HEADER` están en `[env]` de cada
-`fly.*.toml`; todo lo demás va como secreto, igual en las dos apps.
+The public URLs (`APP_URL`, `API_URL`) and `CLIENT_IP_HEADER` are in `[env]` of each
+`fly.*.toml`; everything else is a secret, the same in both apps.
 
-## Una sola vez
+## Once
 
 ### 1. Fly
 
@@ -23,116 +22,116 @@ fly apps create starter-api
 fly apps create starter-web
 ```
 
-Si un nombre ya está tomado, elige otro y cámbialo en `app = "…"` del `fly.*.toml` y en
-`APPS` de `tooling/fly-secrets/index.ts`.
+If a name is taken, pick another and change it in `app = "…"` of the `fly.*.toml` and in
+`APPS` of `tooling/fly-secrets/index.ts`.
 
-### 2. Base de datos
+### 2. Database
 
 ```bash
 fly mpg create --name starter-db --region iad --plan basic
 ```
 
-En el dashboard de Fly → Managed Postgres → `starter-db` → Connection, copia la URL **directa**
-(`…@direct.<id>.flympg.net/…`). Si `iad` no está disponible, usa otra región cercana
-(`fly platform regions`) y pon la misma en `primary_region` de los dos `fly.*.toml`.
+In the Fly dashboard → Managed Postgres → `starter-db` → Connection, copy the **direct** URL
+(`…@direct.<id>.flympg.net/…`). If `iad` isn't available, use another nearby region
+(`fly platform regions`) and set the same one in `primary_region` of both `fly.*.toml`.
 
-### 3. Secretos
+### 3. Secrets
 
-Arma `.env.production` desde tu `.env` (queda fuera de git por `.gitignore`) y cambia lo que es
-de desarrollo:
+Build `.env.production` from your `.env` (`.gitignore` keeps it out of git) and change what is
+for development:
 
-| Variable               | En producción                                                                     |
-| ---------------------- | --------------------------------------------------------------------------------- |
-| `DATABASE_URL`         | La URL directa del paso 2                                                         |
-| `BETTER_AUTH_SECRET`   | Uno nuevo: `openssl rand -base64 32`. Cambiarlo después cierra todas las sesiones |
-| `AUTH_METHODS`         | Los mismos de tu `.env` (o los que quieras en producción)                         |
-| `SMTP_*`, `EMAIL_FROM` | Tu proveedor de correo (Resend, Postmark, SES…), con el dominio verificado        |
-| `GOOGLE_*`             | Solo con `google`: el mismo cliente OAuth que en local                            |
+| Variable               | In production                                                              |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `DATABASE_URL`         | The direct URL from step 2                                                 |
+| `BETTER_AUTH_SECRET`   | A new one: `openssl rand -base64 32`. Changing it later signs everyone out |
+| `AUTH_METHODS`         | The same as in your `.env` (or whichever you want in production)           |
+| `SMTP_*`, `EMAIL_FROM` | Your email provider (Resend, Postmark, SES…), with the domain verified     |
+| `GOOGLE_*`             | Only with `google`: the same OAuth client as locally                       |
 
-Con Google, agrega al cliente OAuth el redirect URI
-`https://app.starter.example/api/auth/callback/google`.
+With Google, add the redirect URI `https://app.starter.example/api/auth/callback/google` to the
+OAuth client.
 
-Revisa y manda:
+Check and send:
 
 ```bash
-pnpm fly:secrets --check   # dice qué falta o sigue apuntando a tu máquina
-pnpm fly:secrets           # los manda a starter-api y starter-web
+pnpm fly:secrets --check   # says what is missing or still points at your machine
+pnpm fly:secrets           # sends them to starter-api and starter-web
 ```
 
-El script no manda nada mientras haya un problema (localhost, Mailpit, el mismo
-`BETTER_AUTH_SECRET` de desarrollo) y deja fuera lo que va en `fly.*.toml` y lo que es solo
-local (`TEST_DATABASE_URL`, `MAILPIT_URL`). Los secretos entran con el próximo despliegue.
+The script sends nothing while there is a problem (localhost, Mailpit, the development
+`BETTER_AUTH_SECRET`) and leaves out what goes in `fly.*.toml` and what is local only
+(`TEST_DATABASE_URL`, `MAILPIT_URL`). The secrets apply with the next deploy.
 
 ### 4. GitHub Actions
 
-Un token de despliegue por app, guardado como secreto del repo:
+One deploy token per app, saved as a repository secret:
 
 ```bash
 gh secret set FLY_API_TOKEN_API --body "$(fly tokens create deploy -a starter-api -x 8760h)"
 gh secret set FLY_API_TOKEN_WEB --body "$(fly tokens create deploy -a starter-web -x 8760h)"
 ```
 
-Sin `gh`: GitHub → Settings → Secrets and variables → Actions → New repository secret, con el
-texto completo que imprime `fly tokens create deploy …` (empieza con `FlyV1 `). Vencen en un
-año: repite estos dos comandos antes.
+Without `gh`: GitHub → Settings → Secrets and variables → Actions → New repository secret, with
+the full text `fly tokens create deploy …` prints (it starts with `FlyV1 `). They expire in a
+year: run these two commands again before then.
 
-### 5. Primer despliegue
+### 5. First deploy
 
 ```bash
 git checkout main && git pull
 pnpm release 1.0.0
 ```
 
-Sigue en Actions → Deploy. La primera vez Fly crea las máquinas y les da IPs.
+Follow it in Actions → Deploy. The first time, Fly creates the machines and gives them IPs.
 
-### 6. Dominios
+### 6. Domains
 
 ```bash
 fly certs add app.starter.example -a starter-web
 fly certs add api.starter.example -a starter-api
 ```
 
-En tu DNS: `CNAME` de `app` → `starter-web.fly.dev` y de `api` → `starter-api.fly.dev`. Si el DNS
-está en Cloudflare, déjalos en **DNS only** (nube gris): Fly emite el certificado y
-`Fly-Client-IP` sigue siendo la IP real del cliente para los límites de intentos.
-`fly certs check <dominio> -a <app>` dice cuándo está listo.
+In your DNS: a `CNAME` from `app` → `starter-web.fly.dev` and from `api` → `starter-api.fly.dev`.
+If the DNS is on Cloudflare, leave them as **DNS only** (grey cloud): Fly issues the certificate
+and `Fly-Client-IP` stays the client's real IP for the rate limits.
+`fly certs check <domain> -a <app>` says when it's ready.
 
-### 7. Revisar
+### 7. Check
 
 - `curl https://api.starter.example/health` → `{"status":"ok","database":"ok"}`
-- `https://app.starter.example/login` muestra los métodos de `AUTH_METHODS` y el correo llega.
+- `https://app.starter.example/login` shows the methods in `AUTH_METHODS` and the email arrives.
 
-## Cada versión
+## Every release
 
 ```bash
 pnpm release          # 1.4.2 → 1.4.3
 pnpm release minor    # 1.4.2 → 1.5.0
 pnpm release major    # 1.4.2 → 2.0.0
-pnpm release 2.1.0    # una exacta, mayor que la última
+pnpm release 2.1.0    # an exact one, higher than the last
 ```
 
-Exige estar en `main`, sin cambios y al día con GitHub; pregunta antes de publicar (`--yes` lo
-salta) y, con `gh`, sigue el despliegue hasta el final. Sin terminal: Actions → Deploy → Run
-workflow, con la versión (`patch` por defecto).
+It requires being on `main`, with no changes and up to date with GitHub; it asks before
+publishing (`--yes` skips that) and, with `gh`, follows the deploy to the end. Without a
+terminal: Actions → Deploy → Run workflow, with the version (`patch` by default).
 
-Lo que hace `.github/workflows/deploy.yml` con el tag `vX.Y.Z`:
-1. Espera el CI de ese commit (lint, typecheck y Vitest) y se detiene si falla.
-2. Despliega `starter-api`. Antes de arrancarla, `release_command` corre las migraciones; si
-   fallan, no se despliega nada y sigue la versión anterior.
-3. Despliega `starter-web`.
+What `.github/workflows/deploy.yml` does with the `vX.Y.Z` tag:
+1. Waits for that commit's CI (lint, typecheck and Vitest) and stops if it fails.
+2. Deploys `starter-api`. Before starting it, `release_command` runs the migrations; if they
+   fail, nothing is deployed and the previous version keeps running.
+3. Deploys `starter-web`.
 
-## Operar
+## Operate
 
 ```bash
-fly logs -a starter-api                     # o starter-web
+fly logs -a starter-api                     # or starter-web
 fly status -a starter-web
-fly ssh console -a starter-api              # una terminal en la máquina (cd /app)
+fly ssh console -a starter-api              # a shell on the machine (cd /app)
 fly secrets list -a starter-api
-fly secrets deploy -a starter-api           # aplica secretos sin esperar a un release
+fly secrets deploy -a starter-api           # applies secrets without waiting for a release
 ```
 
-- **Volver a una versión**: `fly deploy --config fly.web.toml --image
-  registry.fly.io/starter-web:v1.4.2` (igual con la API). Las migraciones no se deshacen: cada
-  migración debe ser compatible con la versión anterior.
-- **Más máquinas**: la web escala con `fly scale count 2 -a starter-web`. La API se queda en una:
-  las tareas programadas corren en su proceso.
+- **Roll back**: `fly deploy --config fly.web.toml --image
+  registry.fly.io/starter-web:v1.4.2` (same for the API). Migrations aren't undone: each
+  migration must be compatible with the previous version.
+- **More machines**: the web scales with `fly scale count 2 -a starter-web`. The API stays at one:
+  the scheduled jobs run in its process.

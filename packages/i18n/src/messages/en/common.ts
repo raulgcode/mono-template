@@ -1,6 +1,3 @@
-import type { Translation } from "../../translate";
-import type { es } from "../es";
-
 export const common = {
   appName: "Starter",
   skipToContent: "Skip to content",
@@ -21,4 +18,4 @@ export const common = {
   errorHome: "Go home",
   notFoundTitle: "We couldn't find this page",
   notFoundDetails: "The link may be incomplete, or the page no longer exists.",
-} as const satisfies Translation<typeof es>["common"];
+} as const;

@@ -79,17 +79,17 @@ export default function App() {
 }
 
 // A middleware that throws before the loaders run (a workspace that isn't yours) leaves the root
-// without loader data, and so without `common`: these few texts stay in the bundle, in Spanish.
+// without loader data, and so without `common`: these few texts stay in the bundle, in English.
 const errorTexts = {
   common: {
     appName: "Starter",
-    errorTitle: "Ups, algo salió mal",
-    errorDetails: "No fue tu culpa. Vuelve a intentarlo en un momento.",
+    errorTitle: "Oops, something went wrong",
+    errorDetails: "It wasn't your fault. Try again in a moment.",
     errorStatus: "Error {status}",
-    errorRetry: "Intentar de nuevo",
-    errorHome: "Ir al inicio",
-    notFoundTitle: "No encontramos esta página",
-    notFoundDetails: "Puede que el enlace esté incompleto o que la página ya no exista.",
+    errorRetry: "Try again",
+    errorHome: "Go home",
+    notFoundTitle: "We couldn't find this page",
+    notFoundDetails: "The link may be incomplete, or the page no longer exists.",
   },
 };
 

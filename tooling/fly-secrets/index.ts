@@ -35,32 +35,34 @@ const { values, positionals } = parseArgs({
 
 const file = positionals[0] ?? ".env.production";
 if (!existsSync(file)) {
-  fail(`No existe ${file}: cópialo de tu .env (cp .env ${file}) y cambia lo de producción`);
+  fail(
+    `${file} doesn't exist: copy your .env (cp .env ${file}) and change what differs in production`,
+  );
 }
 const local = existsSync(".env") && file !== ".env" ? readEnv(".env") : {};
 const plan = planSecrets(readEnv(file), { localAuthSecret: local.BETTER_AUTH_SECRET });
 
-console.log(`Secretos de ${file} para ${APPS.join(" y ")}:`);
+console.log(`Secrets from ${file} for ${APPS.join(" and ")}:`);
 for (const key of Object.keys(plan.secrets)) console.log(`  ✓ ${key}`);
-for (const { key, reason } of plan.skipped) console.log(`  · ${key}: no se manda (${reason})`);
+for (const { key, reason } of plan.skipped) console.log(`  · ${key}: not sent (${reason})`);
 if (plan.problems.length > 0) {
-  console.error("\nAntes de mandarlos, arregla esto:");
+  console.error("\nBefore sending them, fix this:");
   for (const problem of plan.problems) console.error(`  ✗ ${problem}`);
   process.exit(1);
 }
 if (values.check) {
-  console.log("\n✓ Listo para producción");
+  console.log("\n✓ Ready for production");
   process.exit(0);
 }
 
 if (spawnSync("fly", ["auth", "whoami"], { stdio: "ignore" }).status !== 0) {
-  fail("Necesitas flyctl con sesión: brew install flyctl && fly auth login");
+  fail("You need flyctl, signed in: brew install flyctl && fly auth login");
 }
 if (!values.yes) {
   const prompt = createInterface({ input: process.stdin, output: process.stdout });
-  const answer = await prompt.question("\n¿Los mando a Fly? (s/N) ");
+  const answer = await prompt.question("\nSend them to Fly? (y/N) ");
   prompt.close();
-  if (!/^(s|si|sí|y|yes)$/i.test(answer.trim())) fail("No mandé nada");
+  if (!/^(y|yes)$/i.test(answer.trim())) fail("Nothing was sent");
 }
 
 // As arguments, never through a shell: no value is quoted, expanded or printed.
@@ -69,6 +71,6 @@ for (const app of APPS) {
   const result = spawnSync("fly", ["secrets", "set", "--stage", "--app", app, ...pairs], {
     stdio: ["ignore", "ignore", "inherit"],
   });
-  if (result.status !== 0) fail(`Fly no aceptó los secretos de ${app}`);
-  console.log(`✓ ${app}: ${pairs.length} secretos (entran con el próximo despliegue)`);
+  if (result.status !== 0) fail(`Fly didn't accept the secrets for ${app}`);
+  console.log(`✓ ${app}: ${pairs.length} secrets (they apply with the next deploy)`);
 }

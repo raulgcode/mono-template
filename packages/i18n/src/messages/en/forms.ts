@@ -1,6 +1,3 @@
-import type { Translation } from "../../translate";
-import type { es } from "../es";
-
 export const forms = {
   emailLabel: "Email",
   emailPlaceholder: "you@email.com",
@@ -17,4 +14,4 @@ export const forms = {
   workspaceNameTooShort: "The name needs at least 2 characters",
   workspaceNameTooLong: "The name can be up to 80 characters",
   tooManyAttempts: "Too many tries. Wait a few minutes and try again.",
-} as const satisfies Translation<typeof es>["forms"];
+} as const;

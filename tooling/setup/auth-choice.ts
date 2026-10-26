@@ -2,13 +2,13 @@ import { type AuthMethod, authMethods } from "@starter/env";
 
 /** How each way to sign in reads in the setup's question, in the order the login shows them. */
 export const authMethodLabels: Record<AuthMethod, string> = {
-  "magic-link": "Enlace por correo (magic link), sin contraseña",
-  password: "Correo y contraseña (con confirmación y recuperación por correo)",
-  google: "Google (necesita un cliente OAuth de Google Cloud)",
+  "magic-link": "Email link (magic link), no password",
+  password: "Email and password (with email confirmation and recovery)",
+  google: "Google (needs an OAuth client from Google Cloud)",
 };
 
 /**
- * The answer to "¿Cómo entra la gente?": numbers of the list (`1,3`), names (`password,google`)
+ * The answer to "How do people sign in?": numbers of the list (`1,3`), names (`password,google`)
  * or Enter for `fallback`. Undefined when something in it isn't a way to sign in.
  */
 export function parseAuthChoice(

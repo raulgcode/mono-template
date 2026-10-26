@@ -1,8 +1,8 @@
 import { expect, test } from "../support/fixtures";
 import { getLinkFromEmail, uniqueEmail } from "../support/mailpit";
 
-test.describe("Feature: entrar con un enlace por correo", () => {
-  test("Scenario: alguien nuevo pide el enlace, lo abre y llega a crear su espacio", async ({
+test.describe("Feature: sign in with an email link", () => {
+  test("Scenario: someone new asks for the link, opens it and lands on creating their workspace", async ({
     page,
     baseURL,
   }) => {
@@ -10,42 +10,42 @@ test.describe("Feature: entrar con un enlace por correo", () => {
 
     await test.step("Given a visitor on the login page, choosing the link", async () => {
       await page.goto("/login");
-      await page.getByRole("link", { name: "Mejor mándame un enlace, sin contraseña" }).click();
+      await page.getByRole("link", { name: "Email me a link instead, no password" }).click();
     });
 
     await test.step("When they ask for the link with their email", async () => {
-      await page.getByLabel("Correo electrónico").fill(email);
-      await page.getByRole("button", { name: "Enviarme el enlace" }).click();
+      await page.getByLabel("Email").fill(email);
+      await page.getByRole("button", { name: "Email me the link" }).click();
     });
 
     await test.step("Then the page says where it went", async () => {
       await expect(page.getByRole("main").getByRole("status")).toHaveText(
-        `Te mandamos un enlace a ${email}. Ábrelo en este dispositivo para entrar.`,
+        `We sent a link to ${email}. Open it on this device to sign in.`,
       );
     });
 
     await test.step("And opening it signs them in, on the onboarding", async () => {
-      await page.goto(await getLinkFromEmail(email, baseURL, "Tu enlace para entrar"));
+      await page.goto(await getLinkFromEmail(email, baseURL, "Your sign-in link"));
       await expect(page).toHaveURL(/\/app\/onboarding$/);
       await expect(
-        page.getByRole("heading", { level: 1, name: "Crea tu espacio de trabajo" }),
+        page.getByRole("heading", { level: 1, name: "Create your workspace" }),
       ).toBeVisible();
     });
   });
 
-  test("Scenario: un correo mal escrito no manda nada y dice por qué", async ({ page }) => {
+  test("Scenario: a mistyped email sends nothing and says why", async ({ page }) => {
     await page.goto("/login?with=link");
-    await page.getByLabel("Correo electrónico").fill("no-es-correo");
-    await page.getByRole("button", { name: "Enviarme el enlace" }).click();
-    await expect(page.getByText("Escribe un correo válido")).toBeVisible();
+    await page.getByLabel("Email").fill("not-an-email");
+    await page.getByRole("button", { name: "Email me the link" }).click();
+    await expect(page.getByText("Enter a valid email")).toBeVisible();
     await expect(page.getByRole("main").getByRole("status")).toHaveCount(0);
   });
 });
 
-test.describe("Feature: cuenta con correo y contraseña", () => {
-  const password = "una-clave-larga";
+test.describe("Feature: account with email and password", () => {
+  const password = "a-long-password";
 
-  test("Scenario: crea su cuenta, confirma el correo y entra a crear su espacio", async ({
+  test("Scenario: they create an account, confirm the email and get in to create their workspace", async ({
     page,
     baseURL,
   }) => {
@@ -53,62 +53,64 @@ test.describe("Feature: cuenta con correo y contraseña", () => {
 
     await test.step("Given a visitor on the sign-up page", async () => {
       await page.goto("/login");
-      await page.getByRole("link", { name: "Créala aquí" }).click();
-      await expect(page.getByRole("heading", { level: 1, name: "Crea tu cuenta" })).toBeVisible();
+      await page.getByRole("link", { name: "Create one" }).click();
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Create your account" }),
+      ).toBeVisible();
     });
 
     await test.step("When they sign up with name, email and password", async () => {
-      await page.getByLabel("Tu nombre").fill("Ana Pérez");
-      await page.getByLabel("Correo electrónico").fill(email);
-      await page.getByLabel("Contraseña").fill(password);
-      await page.getByRole("button", { name: "Crear cuenta" }).click();
+      await page.getByLabel("Your name").fill("Ana Smith");
+      await page.getByLabel("Email").fill(email);
+      await page.getByLabel("Password").fill(password);
+      await page.getByRole("button", { name: "Create account" }).click();
     });
 
     await test.step("Then they are asked to confirm their email", async () => {
       await expect(page.getByRole("main").getByRole("status")).toHaveText(
-        `Te mandamos un enlace a ${email} para confirmar tu cuenta. Ábrelo para entrar.`,
+        `We sent a link to ${email} to confirm your account. Open it to sign in.`,
       );
     });
 
     await test.step("And the confirmation link signs them in", async () => {
-      await page.goto(await getLinkFromEmail(email, baseURL, "Confirma tu correo"));
+      await page.goto(await getLinkFromEmail(email, baseURL, "Confirm your email"));
       await expect(page).toHaveURL(/\/app\/onboarding$/);
     });
   });
 
-  test("Scenario: una contraseña equivocada no entra y lo dice", async ({ page, baseURL }) => {
+  test("Scenario: a wrong password doesn't get in and says so", async ({ page, baseURL }) => {
     const email = await test.step("Given someone with a confirmed account", async () => {
       const email = uniqueEmail("wrong");
       await page.goto("/sign-up");
-      await page.getByLabel("Tu nombre").fill("Luis");
-      await page.getByLabel("Correo electrónico").fill(email);
-      await page.getByLabel("Contraseña").fill(password);
-      await page.getByRole("button", { name: "Crear cuenta" }).click();
-      await page.goto(await getLinkFromEmail(email, baseURL, "Confirma tu correo"));
+      await page.getByLabel("Your name").fill("Luis");
+      await page.getByLabel("Email").fill(email);
+      await page.getByLabel("Password").fill(password);
+      await page.getByRole("button", { name: "Create account" }).click();
+      await page.goto(await getLinkFromEmail(email, baseURL, "Confirm your email"));
       await page.context().clearCookies();
       return email;
     });
 
     await test.step("When they sign in with another password", async () => {
       await page.goto("/login");
-      await page.getByLabel("Correo electrónico").fill(email);
-      await page.getByLabel("Contraseña").fill("otra-clave-larga");
-      await page.getByRole("button", { name: "Entrar", exact: true }).click();
+      await page.getByLabel("Email").fill(email);
+      await page.getByLabel("Password").fill("another-long-password");
+      await page.getByRole("button", { name: "Sign in", exact: true }).click();
     });
 
     await test.step("Then they stay on the login page with the reason", async () => {
-      await expect(page.getByRole("alert")).toHaveText("El correo o la contraseña no coinciden.");
+      await expect(page.getByRole("alert")).toHaveText("The email or the password doesn't match.");
       await expect(page).toHaveURL(/\/login/);
     });
 
     await test.step("And with the right one they get in", async () => {
-      await page.getByLabel("Contraseña").fill(password);
-      await page.getByRole("button", { name: "Entrar", exact: true }).click();
+      await page.getByLabel("Password").fill(password);
+      await page.getByRole("button", { name: "Sign in", exact: true }).click();
       await expect(page).toHaveURL(/\/app\/onboarding$/);
     });
   });
 
-  test("Scenario: olvidó su contraseña, elige otra con el enlace y entra con ella", async ({
+  test("Scenario: they forgot their password, choose another from the link and sign in with it", async ({
     page,
     baseURL,
   }) => {
@@ -116,43 +118,49 @@ test.describe("Feature: cuenta con correo y contraseña", () => {
 
     await test.step("Given someone with a confirmed account", async () => {
       await page.goto("/sign-up");
-      await page.getByLabel("Tu nombre").fill("Marta");
-      await page.getByLabel("Correo electrónico").fill(email);
-      await page.getByLabel("Contraseña").fill(password);
-      await page.getByRole("button", { name: "Crear cuenta" }).click();
-      await page.goto(await getLinkFromEmail(email, baseURL, "Confirma tu correo"));
+      await page.getByLabel("Your name").fill("Marta");
+      await page.getByLabel("Email").fill(email);
+      await page.getByLabel("Password").fill(password);
+      await page.getByRole("button", { name: "Create account" }).click();
+      await page.goto(await getLinkFromEmail(email, baseURL, "Confirm your email"));
       await page.context().clearCookies();
     });
 
     await test.step("When they ask for a new password", async () => {
       await page.goto("/login");
-      await page.getByRole("link", { name: "¿Olvidaste tu contraseña?" }).click();
-      await page.getByLabel("Correo electrónico").fill(email);
-      await page.getByRole("button", { name: "Mandarme el enlace" }).click();
+      await page.getByRole("link", { name: "Forgot your password?" }).click();
+      // The login has an Email field too: wait for the new page before typing.
+      await expect(page).toHaveURL(/\/forgot-password$/);
+      await page.getByLabel("Email").fill(email);
+      await page.getByRole("button", { name: "Email me the link" }).click();
       await expect(page.getByRole("main").getByRole("status")).toContainText(email);
     });
 
     await test.step("And choose one from the email's link", async () => {
-      await page.goto(await getLinkFromEmail(email, baseURL, "Elige una nueva contraseña"));
-      await page.getByLabel("Nueva contraseña").fill("mi-clave-nueva");
-      await page.getByRole("button", { name: "Guardar contraseña" }).click();
+      await page.goto(await getLinkFromEmail(email, baseURL, "Choose a new password"));
+      await page.getByLabel("New password").fill("my-new-password");
+      await page.getByRole("button", { name: "Save password" }).click();
       await expect(page.getByRole("main").getByRole("status")).toHaveText(
-        "Listo, ya puedes entrar con tu nueva contraseña.",
+        "Done, you can sign in with your new password.",
       );
     });
 
     await test.step("Then the new password signs them in", async () => {
-      await page.getByRole("link", { name: "Volver a entrar" }).click();
-      await page.getByLabel("Correo electrónico").fill(email);
-      await page.getByLabel("Contraseña").fill("mi-clave-nueva");
-      await page.getByRole("button", { name: "Entrar", exact: true }).click();
+      await page.getByRole("link", { name: "Back to sign in" }).click();
+      await expect(page).toHaveURL(/\/login\?with=password$/);
+      await page.getByLabel("Email").fill(email);
+      await page.getByLabel("Password").fill("my-new-password");
+      await page.getByRole("button", { name: "Sign in", exact: true }).click();
       await expect(page).toHaveURL(/\/app\/onboarding$/);
     });
   });
 });
 
-test.describe("Feature: entrar con Google", () => {
-  test("Scenario: el botón de Google lo lleva a elegir su cuenta", async ({ page, baseURL }) => {
+test.describe("Feature: sign in with Google", () => {
+  test("Scenario: the Google button takes them to pick their account", async ({
+    page,
+    baseURL,
+  }) => {
     // Playwright can't stop the redirect itself, so catch the app's 302 and stop there: the
     // test never talks to the real Google.
     let googleUrl: URL | undefined;
@@ -173,7 +181,7 @@ test.describe("Feature: entrar con Google", () => {
     });
 
     await test.step("When they choose to continue with Google", async () => {
-      await page.getByRole("button", { name: "Continuar con Google" }).click();
+      await page.getByRole("button", { name: "Continue with Google" }).click();
       await expect(page).toHaveTitle("Google");
     });
 
@@ -188,11 +196,11 @@ test.describe("Feature: entrar con Google", () => {
     });
   });
 
-  test("Scenario: si Google falla vuelve al login con un aviso", async ({ page }) => {
+  test("Scenario: if Google fails they come back to the login with a notice", async ({ page }) => {
     await page.goto("/login?error=access_denied");
     await expect(page.getByRole("alert")).toHaveText(
-      "No pudimos entrar con Google. Vuelve a intentarlo o usa tu correo.",
+      "We couldn't sign you in with Google. Try again or use your email.",
     );
-    await expect(page.getByLabel("Correo electrónico")).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
   });
 });

@@ -5,7 +5,7 @@ import { ScrollShadow } from "./scroll-shadow";
 function renderScroller(contentWidth: number) {
   return render(
     <ScrollShadow data-testid="wrapper" style={{ width: 200 }}>
-      <div style={{ width: contentWidth, height: 20 }}>contenido</div>
+      <div style={{ width: contentWidth, height: 20 }}>content</div>
     </ScrollShadow>,
   );
 }
@@ -13,14 +13,14 @@ function renderScroller(contentWidth: number) {
 const scrollerOf = (wrapper: Element) => wrapper.firstElementChild as HTMLElement;
 
 describe("ScrollShadow", () => {
-  it("muestra la sombra del final cuando hay más contenido a la derecha", async () => {
+  it("shows the end shadow when there is more content to the right", async () => {
     const screen = await renderScroller(600);
     const wrapper = screen.getByTestId("wrapper");
     await expect.element(wrapper).toHaveAttribute("data-start", "false");
     await expect.element(wrapper).toHaveAttribute("data-end", "true");
   });
 
-  it("cambia de lado al desplazarse y la quita al llegar al final", async () => {
+  it("switches sides on scroll and drops it at the end", async () => {
     const screen = await renderScroller(600);
     const wrapper = screen.getByTestId("wrapper");
     const scroller = scrollerOf(wrapper.element());
@@ -36,7 +36,7 @@ describe("ScrollShadow", () => {
     await expect.element(wrapper).toHaveAttribute("data-end", "false");
   });
 
-  it("no muestra sombras cuando todo cabe", async () => {
+  it("shows no shadows when everything fits", async () => {
     const screen = await renderScroller(150);
     const wrapper = screen.getByTestId("wrapper");
     await expect.element(wrapper).toHaveAttribute("data-start", "false");
@@ -44,18 +44,18 @@ describe("ScrollShadow", () => {
   });
 });
 
-describe("ScrollShadow con contenido sin foco (código)", () => {
-  it("el teclado puede desplazarlo: es una región con nombre y foco", async () => {
+describe("ScrollShadow with content that takes no focus (code)", () => {
+  it("the keyboard can scroll it: a named, focusable region", async () => {
     const screen = await render(
-      <ScrollShadow scrollerLabel="Ejemplo de llamada" style={{ width: 200 }}>
+      <ScrollShadow scrollerLabel="Request example" style={{ width: 200 }}>
         <pre style={{ width: 600 }}>curl …</pre>
       </ScrollShadow>,
     );
-    const region = screen.getByRole("region", { name: "Ejemplo de llamada" });
+    const region = screen.getByRole("region", { name: "Request example" });
     await expect.element(region).toHaveAttribute("tabindex", "0");
   });
 
-  it("sin nombre no agrega nada al orden del teclado", async () => {
+  it("without a name it adds nothing to the tab order", async () => {
     const screen = await renderScroller(600);
     const scroller = scrollerOf(screen.getByTestId("wrapper").element());
     expect(scroller.hasAttribute("tabindex")).toBe(false);

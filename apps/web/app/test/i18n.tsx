@@ -7,7 +7,7 @@ import { createRoutesStub } from "react-router";
 import { render } from "vitest-browser-react";
 
 export function translatedRoot<T extends object>(
-  locale: Locale = "es",
+  locale: Locale = "en",
   data: T = {} as T,
   namespaces: Namespace[] = ["common"],
 ) {
@@ -18,7 +18,7 @@ export function translatedRoot<T extends object>(
 /** Renders a component that translates, as a page that loaded `namespaces` in `locale` would. */
 export function renderTranslated(
   ui: ReactNode,
-  { locale = "es", namespaces = [] }: { locale?: Locale; namespaces?: Namespace[] } = {},
+  { locale = "en", namespaces = [] }: { locale?: Locale; namespaces?: Namespace[] } = {},
 ) {
   const Stub = createRoutesStub([
     {

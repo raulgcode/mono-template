@@ -7,7 +7,7 @@ afterAll(() => connection.close());
 const db = connection.db;
 
 describe("resolveTenant", () => {
-  it("da el espacio a quien es miembro", async () => {
+  it("gives the workspace to a member", async () => {
     const tenant = await createTestTenant(db);
 
     const ctx = await resolveTenant(db, tenant.userId, tenant.slug);
@@ -19,7 +19,7 @@ describe("resolveTenant", () => {
     });
   });
 
-  it("no da un espacio ajeno: responde igual que uno que no existe", async () => {
+  it("doesn't give someone else's workspace: answers as if it didn't exist", async () => {
     const mine = await createTestTenant(db);
     const theirs = await createTestTenant(db);
 
@@ -29,7 +29,7 @@ describe("resolveTenant", () => {
 });
 
 describe("listMemberships", () => {
-  it("lista los espacios de la persona, el más viejo primero", async () => {
+  it("lists the person's workspaces, oldest first", async () => {
     const first = await createTestTenant(db);
     const second = await createTestTenant(db, { userId: first.userId, role: "member" });
 
@@ -43,7 +43,7 @@ describe("listMemberships", () => {
 });
 
 describe("getWorkspace", () => {
-  it("lee solo el espacio del tenant", async () => {
+  it("reads only the tenant's workspace", async () => {
     const tenant = await createTestTenant(db);
     const ctx = await resolveTenant(db, tenant.userId, tenant.slug);
     if (!ctx) throw new Error("no tenant");

@@ -7,7 +7,7 @@ import { Button } from "~/components/ui/button";
 import { useT } from "~/lib/i18n";
 
 /**
- * A narrow page outside a workspace: sign-in, sign-up, onboarding. `signOut` shows "Cerrar sesión"
+ * A narrow page outside a workspace: sign-in, sign-up, onboarding. `signOut` shows "Sign out"
  * in the header, the only way out for someone without the workspace's menu.
  */
 export function StandalonePage({

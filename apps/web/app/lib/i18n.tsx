@@ -76,7 +76,7 @@ export function richText<K extends Key>(
 
 /**
  * A text that may be a key, like a validation error from `@starter/contracts`. One that isn't a
- * key (the forms still written in Spanish) comes back as it is.
+ * key (a plain text) comes back as it is.
  */
 export function translateText(t: T, text: string): string {
   return (t as (key: string) => string)(text);

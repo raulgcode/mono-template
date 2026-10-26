@@ -7,7 +7,7 @@ import { translatedRoot } from "~/test/i18n";
 import { richText, useLocale, useT } from "./i18n";
 
 // A tagged text the dictionaries don't have yet, sent the way a loader would.
-const tagged = { demo: { terms: "Lee los <terms>términos</terms> de {business}" } };
+const tagged = { demo: { terms: "Read the <terms>terms</terms> of {business}" } };
 const taggedKey = "demo.terms" as MessageKey<Messages>;
 
 function Page() {
@@ -18,7 +18,7 @@ function Page() {
       <p>{t("common.themeCurrent", { theme: t("common.themeDark") })}</p>
       <p>
         {richText(t, taggedKey, { terms: (text) => <Link to="/terms">{text}</Link> }, {
-          business: "Café Luna",
+          business: "Moon Café",
         } as never)}
       </p>
     </main>
@@ -40,20 +40,20 @@ function renderPage(locale: "es" | "en") {
 }
 
 describe("useT", () => {
-  it("traduce con lo que mandó el loader, en su idioma", async () => {
-    const screen = await renderPage("en");
-    await expect
-      .element(screen.getByRole("heading"))
-      .toHaveTextContent("We couldn't find this page");
-    await expect.element(screen.getByText("Theme: Dark")).toBeVisible();
-    await expect.element(screen.getByRole("main")).toHaveAttribute("lang", "en");
-  });
-
-  it("richText cambia las etiquetas por componentes y rellena los placeholders", async () => {
+  it("translates with what the loader sent, in its language", async () => {
     const screen = await renderPage("es");
     await expect
-      .element(screen.getByRole("link", { name: "términos" }))
+      .element(screen.getByRole("heading"))
+      .toHaveTextContent("No encontramos esta página");
+    await expect.element(screen.getByText("Tema: Oscuro")).toBeVisible();
+    await expect.element(screen.getByRole("main")).toHaveAttribute("lang", "es");
+  });
+
+  it("richText turns tags into components and fills the placeholders", async () => {
+    const screen = await renderPage("en");
+    await expect
+      .element(screen.getByRole("link", { name: "terms" }))
       .toHaveAttribute("href", "/terms");
-    await expect.element(screen.getByText(/Lee los .* de Café Luna/)).toBeVisible();
+    await expect.element(screen.getByText(/Read the .* of Moon Café/)).toBeVisible();
   });
 });

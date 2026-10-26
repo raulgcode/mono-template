@@ -1,6 +1,3 @@
-import type { Translation } from "../../translate";
-import type { es } from "../es";
-
 export const email = {
   footer: "You got this email because someone asked for it with this address on Starter.",
   linkFallback: "Button not working? Copy this link into your browser:",
@@ -19,4 +16,4 @@ export const email = {
   resetBody: "Tap the button to choose a new password. The link works for an hour.",
   resetButton: "Choose password",
   resetIgnore: "If you didn't ask for it, ignore this email: your password stays the same.",
-} as const satisfies Translation<typeof es>["email"];
+} as const;
